@@ -11,7 +11,8 @@ const db = mysql.createConnection({
         rejectUnauthorized: false // Aiven ডাটাবেজের সিকিউর কানেকশনের জন্য এটি ১০০% জরুরি
     }
 });
-
+ 
+ 
 db.connect((err) => {
     if (err) {
         console.error('Database connection failed: ❌', err.message);
