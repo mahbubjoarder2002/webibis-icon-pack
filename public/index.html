@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webibis Icons - Free Custom Web Font</title>
+    <link rel="stylesheet" href="/dist/webibis-icons.css">
+    <style>
+        :root { --primary: #1abc9c; --dark: #2c3e50; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; }
+        header { background: linear-gradient(135deg, var(--dark), #34495e); color: white; text-align: center; padding: 60px 20px; }
+        header h1 { margin: 0; font-size: 2.5rem; letter-spacing: 1px; }
+        header p { margin: 10px 0 30px; font-size: 1.1rem; color: #b2bec3; }
+        
+        .cdn-box { max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.2); }
+        .cdn-box code { color: #ffeaa7; font-family: monospace; font-size: 0.95rem; overflow-x: auto; white-space: nowrap; margin-right: 10px; }
+        .cdn-box button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .cdn-box button:hover { background: #16a085; }
+
+        .search-container { max-width: 1000px; margin: 40px auto 20px; padding: 0 20px; }
+        #searchBar { width: 100%; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 30px; box-sizing: border-box; outline: none; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        #searchBar:focus { border-color: var(--primary); box-shadow: 0 4px 12px rgba(26, 188, 156, 0.2); }
+
+        .icons-grid { max-width: 1000px; margin: 0 auto 50px; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; }
+        .icon-card { background: white; border: 1px solid #e1e8ed; border-radius: 8px; padding: 25px 10px; text-align: center; cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .icon-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); border-color: var(--primary); }
+        
+        /* SVG আইকন সাইজিং এবং কালার ফিক্স */
+        .icon-img-box { width: 45px; height: 45px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; color: var(--dark); }
+        .icon-img-box svg, .icon-img-box img { width: 100%; height: 100%; object-fit: contain; color: currentcolor; fill: currentcolor; }
+        .icon-card:hover .icon-img-box { color: var(--primary); }
+        
+        .icon-name { font-size: 0.85rem; color: #7f8c8d; font-weight: 500; word-break: break-all; }
+
+        /* পপআপ মডাল */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 500px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: scaleUp 0.3s ease; }
+        @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal h3 { margin-top: 0; color: var(--dark); }
+        
+        .modal-preview-box { width: 80px; height: 80px; margin: 20px auto; color: var(--primary); }
+        .modal-preview-box img { width: 100%; height: 100%; }
+
+        .copy-code-box { background: #f1f2f6; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 0.95rem; margin-bottom: 20px; border: 1px solid #dfe4ea; text-align: left; overflow-x: auto; white-space: nowrap; color: #2f3542; }
+        .modal-close { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .modal-close:hover { background: #c0392b; }
+        .btn-copy-tag { background: var(--dark); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 10px; }
+        .btn-copy-tag:hover { background: #1e272e; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Webibis Icon Pack 🚀</h1>
+    <p>High-quality custom vector icons generated as a lightweight web font.</p>
+    <div class="cdn-box">
+        <code id="cdnLink">&lt;link rel="stylesheet" href="http://localhost:5000/dist/webibis-icons.css"&gt;</code>
+        <button onclick="copyCDN()">Copy CDN</button>
+    </div>
+</header>
+
+<div class="search-container">
+    <input type="text" id="searchBar" placeholder="Search icons by name or tags (e.g., home, house)..." oninput="filterIcons()">
+</div>
+
+<div class="icons-grid" id="iconsGrid">
+    </div>
+
+<div class="modal" id="codeModal">
+    <div class="modal-content">
+        <h3 id="modalIconName">Icon Name</h3>
+        <div class="modal-preview-box">
+            <img id="modalPreviewImg" src="" alt="preview">
+        </div>
+        <div class="copy-code-box" id="codeToCopy"></div>
+        <button class="btn-copy-tag" onclick="copyIconTag()">Copy HTML Tag</button>
+        <button class="modal-close" onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+<script>
+    let allIcons = [];
+    const SERVER_URL = 'http://localhost:5000';
+
+    // ১. ব্যাকএন্ড থেকে সব আইকন লোড করা
+    async function loadIcons() {
+        try {
+            const response = await fetch(`${SERVER_URL}/api/icons/all`);
+            const result = await response.json();
+            if (result.success) {
+                allIcons = result.data;
+                displayIcons(allIcons);
+            }
+        } catch (error) {
+            console.error('Failed to load icons:', error);
+        }
+    }
+
+    // ২. আইকনগুলো গ্রিড আকারে স্ক্রিনে দেখানো (সরাসরি SVG এপিআই রুট ব্যবহার করে)
+    function displayIcons(icons) {
+        const grid = document.getElementById('iconsGrid');
+        grid.innerHTML = '';
+
+        if(icons.length === 0) {
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#95a5a6;">No icons found!</p>';
+            return;
+        }
+
+        icons.forEach(icon => {
+            const card = document.createElement('div');
+            card.className = 'icon-card';
+            
+            // আমাদের নতুন তৈরি করা SVG রুট লিঙ্ক
+            const svgUrl = `${SERVER_URL}/api/icons/svg/${icon.id}`;
+            const fontClassName = `webibis-icons-${icon.icon_name}`;
+            
+            card.innerHTML = `
+                <div class="icon-img-box">
+                    <img src="${svgUrl}" alt="${icon.icon_name}">
+                </div>
+                <div class="icon-name">${icon.icon_name}</div>
+            `;
+            
+            card.onclick = () => openModal(icon.icon_name, fontClassName, svgUrl);
+            grid.appendChild(card);
+        });
+    }
+
+    // ৩. লাইভ সার্চ ফিল্টারিং
+    function filterIcons() {
+        const query = document.getElementById('searchBar').value.toLowerCase().trim();
+        const filtered = allIcons.filter(icon => 
+            icon.icon_name.includes(query) || (icon.tags && icon.tags.toLowerCase().includes(query))
+        );
+        displayIcons(filtered);
+    }
+
+    // ৪. CDN লিঙ্ক কপি করা
+    function copyCDN() {
+        const linkText = document.getElementById('cdnLink').innerText;
+        navigator.clipboard.writeText(linkText);
+        alert('CDN Link copied to clipboard! 📋\nPaste it into your HTML <head> tag.');
+    }
+
+    // ৫. মডাল ওপেন করা
+    function openModal(name, className, svgUrl) {
+        document.getElementById('modalIconName').innerText = name.toUpperCase();
+        document.getElementById('modalPreviewImg').src = svgUrl;
+        // ইউজার তার নিজের প্রজেক্টে ফন্ট ক্লাস হিসেবে যেভাবে ব্যবহার করবে:
+        document.getElementById('codeToCopy').innerText = `<i class="${className}"></i>`;
+        document.getElementById('codeModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('codeModal').style.display = 'none';
+    }
+
+    // ৬. আইকন ট্যাগ কপি করা
+    function copyIconTag() {
+        const code = document.getElementById('codeToCopy').innerText;
+        navigator.clipboard.writeText(code);
+        alert('HTML Tag copied! Just paste it into your external project. 🚀');
+        closeModal();
+    }
+
+    window.onload = loadIcons;
+</script>
+</body>
+</html>
