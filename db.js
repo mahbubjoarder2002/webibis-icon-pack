@@ -8,7 +8,7 @@ const db = mysql.createConnection({
     database: process.env.DB_NAME,
     port: process.env.DB_PORT || 3306,
     ssl: {
-        rejectUnauthorized: false // Aiven ডাটাবেজের সিকিউর কানেকশনের জন্য এটি জরুরি
+        rejectUnauthorized: false // Aiven ডাটাবেজের সিকিউর কানেকশনের জন্য এটি ১০০% জরুরি
     }
 });
 
@@ -18,7 +18,6 @@ db.connect((err) => {
     } else {
         console.log('Database Connected Successfully! 🚀 (Aiven Cloud)');
         
-        // এখানে আইকন টেবিলটি স্বয়ংক্রিয়ভাবে তৈরি করার কোড দেওয়া হলো (যদি আগে থেকে না থাকে)
         const createTableQuery = `
             CREATE TABLE IF NOT EXISTS icons (
                 id INT AUTO_INCREMENT PRIMARY KEY,
