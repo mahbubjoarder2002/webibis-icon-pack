@@ -15,8 +15,8 @@
         button { background: #1abc9c; color: #fff; border: none; padding: 12px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; width: 100%; font-weight: bold; transition: background 0.3s; }
         button:hover { background: #16a085; }
         #message { margin-top: 15px; padding: 10px; border-radius: 4px; display: none; font-size: 14px; text-align: center; }
-        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block !important; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block !important; }
     </style>
 </head>
 <body>
@@ -66,11 +66,14 @@
 </div>
 
 <script>
+    const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
+
     document.getElementById('iconForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const msgDiv = document.getElementById('message');
         msgDiv.style.display = 'none';
+        msgDiv.className = ''; // রিসেট ক্লাস
 
         const data = {
             icon_name: document.getElementById('icon_name').value.trim().toLowerCase(),
@@ -81,7 +84,7 @@
         };
 
         try {
-            const response = await fetch('http://localhost:5000/api/icons/add', {
+            const response = await fetch(`${SERVER_URL}/api/icons/add`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -90,19 +93,17 @@
             const result = await response.json();
 
             if (result.success) {
-                msgDiv.className = 'message success';
-                msgDiv.innerText = result.message;
-                msgDiv.style.display = 'block';
+                msgDiv.className = 'success';
+                msgDiv.innerText = result.message || 'Icon uploaded successfully! 🎉';
                 document.getElementById('iconForm').reset();
             } else {
-                msgDiv.className = 'message error';
-                msgDiv.innerText = result.message;
-                msgDiv.style.display = 'block';
+                msgDiv.className = 'error';
+                msgDiv.innerText = result.message || 'Failed to upload icon!';
             }
         } catch (error) {
-            msgDiv.className = 'message error';
+            console.error('Upload error:', error);
+            msgDiv.className = 'error';
             msgDiv.innerText = 'Failed to connect to the server!';
-            msgDiv.style.display = 'block';
         }
     });
 </script>

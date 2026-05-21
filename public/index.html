@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webibis Icons - Free Custom Web Font</title>
-    <link rel="stylesheet" href="/dist/webibis-icons.css">
+    <link rel="stylesheet" href="https://webibis-icon-pack.onrender.com/dist/webibis-icons.css">
     <style>
         :root { --primary: #1abc9c; --dark: #2c3e50; --bg: #f8f9fa; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; }
@@ -44,6 +44,7 @@
         .copy-code-box { background: #f1f2f6; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 0.95rem; margin-bottom: 20px; border: 1px solid #dfe4ea; text-align: left; overflow-x: auto; white-space: nowrap; color: #2f3542; }
         .modal-close { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .modal-close:hover { background: #c0392b; }
+        .modal-close:hover { background: #c0392b; }
         .btn-copy-tag { background: var(--dark); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 10px; }
         .btn-copy-tag:hover { background: #1e272e; }
     </style>
@@ -54,7 +55,7 @@
     <h1>Webibis Icon Pack 🚀</h1>
     <p>High-quality custom vector icons generated as a lightweight web font.</p>
     <div class="cdn-box">
-        <code id="cdnLink">&lt;link rel="stylesheet" href="http://localhost:5000/dist/webibis-icons.css"&gt;</code>
+        <code id="cdnLink">&lt;link rel="stylesheet" href="https://webibis-icon-pack.onrender.com/dist/webibis-icons.css"&gt;</code>
         <button onclick="copyCDN()">Copy CDN</button>
     </div>
 </header>
@@ -63,8 +64,7 @@
     <input type="text" id="searchBar" placeholder="Search icons by name or tags (e.g., home, house)..." oninput="filterIcons()">
 </div>
 
-<div class="icons-grid" id="iconsGrid">
-    </div>
+<div class="icons-grid" id="iconsGrid"></div>
 
 <div class="modal" id="codeModal">
     <div class="modal-content">
@@ -80,12 +80,12 @@
 
 <script>
     let allIcons = [];
-    const SERVER_URL = 'http://localhost:5000';
+    const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
 
     // ১. ব্যাকএন্ড থেকে সব আইকন লোড করা
     async function loadIcons() {
         try {
-            const response = await fetch(`${SERVER_URL}/api/icons/all`);
+            const response = await fetch(`${SERVER_URL}/api/icons`);
             const result = await response.json();
             if (result.success) {
                 allIcons = result.data;
@@ -151,7 +151,7 @@
         document.getElementById('codeModal').style.display = 'flex';
     }
 
-    function closeModal() {
+    window.closeModal = function() {
         document.getElementById('codeModal').style.display = 'none';
     }
 
