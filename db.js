@@ -1,24 +1,24 @@
 const mysql = require('mysql2');
-require('dotenv').config();
 
+// কোনো .env ফাইল ছাড়া সরাসরি আইভেন ক্লাউড ডাটাবেজ কানেকশন
 const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 3306,
+    host: 'mysql-195c6f94-webibis-icon-pack.i.aivencloud.com',
+    user: 'avnadmin',
+    password: 'AVNS_AUAe9lWQGKZqfjvQ7QY',
+    database: 'defaultdb',
+    port: 21748,
     ssl: {
-        rejectUnauthorized: false // Aiven ডাটাবেজের সিকিউর কানেকশনের জন্য এটি ১০০% জরুরি
+        rejectUnauthorized: false
     }
 });
- 
- 
+
 db.connect((err) => {
     if (err) {
         console.error('Database connection failed: ❌', err.message);
     } else {
-        console.log('Database Connected Successfully! 🚀 (Aiven Cloud)');
+        console.log('Database Connected Successfully! 🚀 (Aiven Cloud - Hardcoded)');
         
+        // টেবিল তৈরি করার কুয়েরি
         const createTableQuery = `
             CREATE TABLE IF NOT EXISTS icons (
                 id INT AUTO_INCREMENT PRIMARY KEY,
