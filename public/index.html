@@ -15,53 +15,35 @@
         .cdn-box { max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.2); }
         .cdn-box code { color: #ffeaa7; font-family: monospace; font-size: 0.95rem; overflow-x: auto; white-space: nowrap; margin-right: 10px; }
         .cdn-box button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .cdn-box button:hover { background: #16a085; }
-
+        
         .search-container { max-width: 1000px; margin: 40px auto 20px; padding: 0 20px; }
-        #searchBar { width: 100%; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 30px; box-sizing: border-box; outline: none; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        #searchBar:focus { border-color: var(--primary); box-shadow: 0 4px 12px rgba(26, 188, 156, 0.2); }
-
+        #searchBar { width: 100%; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 30px; outline: none; transition: 0.3s; }
+        
         .icons-grid { max-width: 1000px; margin: 0 auto 50px; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; }
-        .icon-card { background: white; border: 1px solid #e1e8ed; border-radius: 8px; padding: 25px 10px; text-align: center; cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .icon-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); border-color: var(--primary); }
+        .icon-card { background: white; border: 1px solid #e1e8ed; border-radius: 8px; padding: 25px 10px; text-align: center; cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; }
+        .icon-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
         
-        /* SVG আইকন সাইজিং এবং কালার ফিক্স */
-        .icon-img-box { width: 45px; height: 45px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; color: var(--dark); }
-        .icon-img-box svg, .icon-img-box img { width: 100%; height: 100%; object-fit: contain; color: currentcolor; fill: currentcolor; }
-        .icon-card:hover .icon-img-box { color: var(--primary); }
+        .icon-img-box { width: 45px; height: 45px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; }
+        .icon-img-box img { width: 100%; height: 100%; object-fit: contain; }
         
-        .icon-name { font-size: 0.85rem; color: #7f8c8d; font-weight: 500; word-break: break-all; }
-
-        /* পপআপ মডাল */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 500px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: scaleUp 0.3s ease; }
-        @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal h3 { margin-top: 0; color: var(--dark); }
-        
-        .modal-preview-box { width: 80px; height: 80px; margin: 20px auto; color: var(--primary); }
-        .modal-preview-box img { width: 100%; height: 100%; }
-
-        .copy-code-box { background: #f1f2f6; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 0.95rem; margin-bottom: 20px; border: 1px solid #dfe4ea; text-align: left; overflow-x: auto; white-space: nowrap; color: #2f3542; }
-        .modal-close { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .modal-close:hover { background: #c0392b; }
-        .modal-close:hover { background: #c0392b; }
-        .btn-copy-tag { background: var(--dark); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 10px; }
-        .btn-copy-tag:hover { background: #1e272e; }
+        .modal-content { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 500px; text-align: center; }
+        .copy-code-box { background: #f1f2f6; padding: 12px; border-radius: 6px; font-family: monospace; margin: 15px 0; border: 1px solid #dfe4ea; text-align: left; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>Webibis Icon Pack 🚀</h1>
-    <p>High-quality custom vector icons generated as a lightweight web font.</p>
+    <p>High-quality custom vector icons as a lightweight web font.</p>
     <div class="cdn-box">
         <code id="cdnLink">&lt;link rel="stylesheet" href="https://webibis-icon-pack.onrender.com/dist/webibis-icons.css"&gt;</code>
-        <button onclick="copyCDN()">Copy CDN</button>
+        <button onclick="copyText('cdnLink', this)">Copy CDN</button>
     </div>
 </header>
 
 <div class="search-container">
-    <input type="text" id="searchBar" placeholder="Search icons by name or tags (e.g., home, house)..." oninput="filterIcons()">
+    <input type="text" id="searchBar" placeholder="Search icons..." oninput="filterIcons()">
 </div>
 
 <div class="icons-grid" id="iconsGrid"></div>
@@ -69,11 +51,8 @@
 <div class="modal" id="codeModal">
     <div class="modal-content">
         <h3 id="modalIconName">Icon Name</h3>
-        <div class="modal-preview-box">
-            <img id="modalPreviewImg" src="" alt="preview">
-        </div>
         <div class="copy-code-box" id="codeToCopy"></div>
-        <button class="btn-copy-tag" onclick="copyIconTag()">Copy HTML Tag</button>
+        <button class="btn-copy-tag" onclick="copyModalTag(this)">Copy HTML Tag</button>
         <button class="modal-close" onclick="closeModal()">Close</button>
     </div>
 </div>
@@ -83,35 +62,15 @@
     const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
 
     async function loadIcons() {
-        const grid = document.getElementById('iconsGrid');
         try {
-            // এন্ডপয়েন্ট আপডেট: /api/icons/all (আপনার সার্ভার রাউট অনুযায়ী)
             const response = await fetch(`${SERVER_URL}/api/icons/all`);
-            
-            if (!response.ok) {
-                throw new Error(`Server returned status: ${response.status}`);
-            }
-
             const result = await response.json();
-            
-            if (result.success && result.data) {
+            if (result.success) {
                 allIcons = result.data;
-                if (allIcons.length === 0) {
-                    grid.innerHTML = '<p style="text-align:center; color:#7f8c8d;">Database is connected, but no icons found. Upload some from Admin Panel!</p>';
-                } else {
-                    displayIcons(allIcons);
-                }
-            } else {
-                throw new Error(result.message || 'Unknown error occurred while fetching data.');
+                displayIcons(allIcons);
             }
         } catch (error) {
-            console.error('Failed to load icons:', error);
-            // সমস্যার কারণ স্ক্রিনে দেখানোর ব্যবস্থা
-            grid.innerHTML = `
-                <div style="grid-column: 1/-1; padding: 20px; background: #f8d7da; color: #721c24; border-radius: 8px; text-align: center;">
-                    <strong>Error Loading Icons:</strong> ${error.message} <br>
-                    <small>Check if your database is connected or API URL is correct.</small>
-                </div>`;
+            console.error('Error loading:', error);
         }
     }
 
@@ -119,33 +78,47 @@
         const grid = document.getElementById('iconsGrid');
         grid.innerHTML = '';
         icons.forEach(icon => {
+            // আইকনের নামকে ক্লিন (slugify) করা
+            const slug = icon.icon_name.toLowerCase().replace(/\s+/g, '-');
+            const className = `webibis-icons-${slug}`;
+            const svgUrl = `${SERVER_URL}/api/icons/svg/${icon.id}`;
+            
             const card = document.createElement('div');
             card.className = 'icon-card';
-            const svgUrl = `${SERVER_URL}/api/icons/svg/${icon.id}`;
             card.innerHTML = `
                 <div class="icon-img-box"><img src="${svgUrl}" alt="${icon.icon_name}"></div>
                 <div class="icon-name">${icon.icon_name}</div>
             `;
-            card.onclick = () => openModal(icon.icon_name, `webibis-icons-${icon.icon_name}`, svgUrl);
+            card.onclick = () => openModal(icon.icon_name, className, svgUrl);
             grid.appendChild(card);
         });
     }
 
-    function filterIcons() {
-        const query = document.getElementById('searchBar').value.toLowerCase().trim();
-        displayIcons(allIcons.filter(icon => icon.icon_name.includes(query) || (icon.tags && icon.tags.toLowerCase().includes(query))));
-    }
-
     function openModal(name, className, svgUrl) {
         document.getElementById('modalIconName').innerText = name.toUpperCase();
-        document.getElementById('modalPreviewImg').src = svgUrl;
         document.getElementById('codeToCopy').innerText = `<i class="${className}"></i>`;
         document.getElementById('codeModal').style.display = 'flex';
     }
 
-    window.closeModal = function() { document.getElementById('codeModal').style.display = 'none'; }
-    function copyCDN() { navigator.clipboard.writeText(document.getElementById('cdnLink').innerText); alert('CDN Link copied!'); }
-    function copyIconTag() { navigator.clipboard.writeText(document.getElementById('codeToCopy').innerText); alert('HTML Tag copied!'); closeModal(); }
+    function copyText(id, btn) {
+        const text = document.getElementById(id).innerText;
+        navigator.clipboard.writeText(text);
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = "Copy CDN", 2000);
+    }
+
+    function copyModalTag(btn) {
+        const text = document.getElementById('codeToCopy').innerText;
+        navigator.clipboard.writeText(text);
+        btn.innerText = "Copied!";
+        setTimeout(() => { btn.innerText = "Copy HTML Tag"; closeModal(); }, 1500);
+    }
+
+    function closeModal() { document.getElementById('codeModal').style.display = 'none'; }
+    function filterIcons() {
+        const query = document.getElementById('searchBar').value.toLowerCase();
+        displayIcons(allIcons.filter(i => i.icon_name.toLowerCase().includes(query)));
+    }
 
     window.onload = loadIcons;
 </script>
