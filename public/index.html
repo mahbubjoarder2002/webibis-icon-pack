@@ -14,21 +14,22 @@
         
         .cdn-box { max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.2); }
         .cdn-box code { color: #ffeaa7; font-family: monospace; font-size: 0.95rem; overflow-x: auto; white-space: nowrap; margin-right: 10px; }
-        .cdn-box button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .cdn-box button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         
         .search-container { max-width: 1000px; margin: 40px auto 20px; padding: 0 20px; }
-        #searchBar { width: 100%; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 30px; outline: none; transition: 0.3s; }
+        #searchBar { width: 100%; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 30px; outline: none; }
         
         .icons-grid { max-width: 1000px; margin: 0 auto 50px; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; }
-        .icon-card { background: white; border: 1px solid #e1e8ed; border-radius: 8px; padding: 25px 10px; text-align: center; cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; }
+        .icon-card { background: white; border: 1px solid #e1e8ed; border-radius: 8px; padding: 25px 10px; text-align: center; cursor: pointer; transition: all 0.3s ease; }
         .icon-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
-        
         .icon-img-box { width: 45px; height: 45px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; }
         .icon-img-box img { width: 100%; height: 100%; object-fit: contain; }
         
+        /* Modal Style */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 500px; text-align: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; }
         .copy-code-box { background: #f1f2f6; padding: 12px; border-radius: 6px; font-family: monospace; margin: 15px 0; border: 1px solid #dfe4ea; text-align: left; }
+        .btn-action { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -50,10 +51,22 @@
 
 <div class="modal" id="codeModal">
     <div class="modal-content">
-        <h3 id="modalIconName">Icon Name</h3>
+        <h3 id="modalIconName"></h3>
         <div class="copy-code-box" id="codeToCopy"></div>
-        <button class="btn-copy-tag" onclick="copyModalTag(this)">Copy HTML Tag</button>
-        <button class="modal-close" onclick="closeModal()">Close</button>
+        <button class="btn-action" onclick="copyModalTag(this)">Copy HTML Tag</button>
+        <button class="btn-action" style="background:#95a5a6" onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+<div class="modal" id="loginModal">
+    <div class="modal-content">
+        <h3>Login to Copy</h3>
+        <input type="email" id="loginEmail" placeholder="Email" style="width:90%; padding:10px; margin:5px 0;">
+        <input type="password" id="loginPass" placeholder="Password" style="width:90%; padding:10px; margin:5px 0;">
+        <button class="btn-action" onclick="handleLogin()">Login</button>
+        <p>Or</p>
+        <button class="btn-action" style="background:#4285F4" onclick="alert('Google Login coming soon!')">Login with Google</button>
+        <button class="btn-action" style="background:#95a5a6" onclick="closeLoginModal()">Cancel</button>
     </div>
 </div>
 
@@ -65,32 +78,18 @@
         try {
             const response = await fetch(`${SERVER_URL}/api/icons/all`);
             const result = await response.json();
-            if (result.success) {
-                allIcons = result.data;
-                displayIcons(allIcons);
-            }
-        } catch (error) {
-            console.error('Error loading:', error);
-        }
+            if (result.success) { allIcons = result.data; displayIcons(allIcons); }
+        } catch (error) { console.error('Error:', error); }
     }
 
     function displayIcons(icons) {
         const grid = document.getElementById('iconsGrid');
-        grid.innerHTML = '';
-        icons.forEach(icon => {
-            const slug = icon.icon_name.toLowerCase().replace(/\s+/g, '-');
-            const className = `webibis-icons-${slug}`;
-            const svgUrl = `${SERVER_URL}/api/icons/svg/${icon.id}`;
-            
-            const card = document.createElement('div');
-            card.className = 'icon-card';
-            card.innerHTML = `
-                <div class="icon-img-box"><img src="${svgUrl}" alt="${icon.icon_name}"></div>
+        grid.innerHTML = icons.map(icon => `
+            <div class="icon-card" onclick="openModal('${icon.icon_name}', 'webibis-icons-${icon.icon_name.toLowerCase().replace(/\s+/g, '-')}')">
+                <div class="icon-img-box"><img src="${SERVER_URL}/api/icons/svg/${icon.id}" alt="${icon.icon_name}"></div>
                 <div class="icon-name">${icon.icon_name}</div>
-            `;
-            card.onclick = () => openModal(icon.icon_name, className);
-            grid.appendChild(card);
-        });
+            </div>
+        `).join('');
     }
 
     function openModal(name, className) {
@@ -99,35 +98,45 @@
         document.getElementById('codeModal').style.display = 'flex';
     }
 
-    function copyText(id, btn) {
-        const text = document.getElementById(id).innerText;
-        navigator.clipboard.writeText(text);
-        btn.innerText = "Copied!";
-        setTimeout(() => btn.innerText = "Copy CDN", 2000);
-    }
+    function closeModal() { document.getElementById('codeModal').style.display = 'none'; }
+    function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
 
     function copyModalTag(btn) {
-        // লগইন চেক লজিক
-        const token = localStorage.getItem('user_token');
-
-        if (!token) {
-            alert("🔒 Please login first to copy the icon tag!");
-            // ইউজারকে লগইন পেজে পাঠিয়ে দিন
-            window.location.href = '/auth.html'; 
+        if (!localStorage.getItem('user_token')) {
+            closeModal();
+            document.getElementById('loginModal').style.display = 'flex';
             return;
         }
-
-        const text = document.getElementById('codeToCopy').innerText;
-        navigator.clipboard.writeText(text);
+        navigator.clipboard.writeText(document.getElementById('codeToCopy').innerText);
         btn.innerText = "Copied!";
         setTimeout(() => { btn.innerText = "Copy HTML Tag"; closeModal(); }, 1500);
     }
 
-    function closeModal() { document.getElementById('codeModal').style.display = 'none'; }
-    
+    async function handleLogin() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPass').value;
+        const res = await fetch(`${SERVER_URL}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const json = await res.json();
+        if (json.success) {
+            localStorage.setItem('user_token', json.token);
+            closeLoginModal();
+            alert("Login Successful!");
+        } else { alert("Login failed!"); }
+    }
+
+    function copyText(id, btn) {
+        navigator.clipboard.writeText(document.getElementById(id).innerText);
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = "Copy CDN", 2000);
+    }
+
     function filterIcons() {
-        const query = document.getElementById('searchBar').value.toLowerCase();
-        displayIcons(allIcons.filter(i => i.icon_name.toLowerCase().includes(query)));
+        const q = document.getElementById('searchBar').value.toLowerCase();
+        displayIcons(allIcons.filter(i => i.icon_name.toLowerCase().includes(q)));
     }
 
     window.onload = loadIcons;
