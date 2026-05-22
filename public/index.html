@@ -82,86 +82,70 @@
     let allIcons = [];
     const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
 
-    // ১. ব্যাকএন্ড থেকে সব আইকন লোড করা
     async function loadIcons() {
+        const grid = document.getElementById('iconsGrid');
         try {
-            const response = await fetch(`${SERVER_URL}/api/icons`);
+            // এন্ডপয়েন্ট আপডেট: /api/icons/all (আপনার সার্ভার রাউট অনুযায়ী)
+            const response = await fetch(`${SERVER_URL}/api/icons/all`);
+            
+            if (!response.ok) {
+                throw new Error(`Server returned status: ${response.status}`);
+            }
+
             const result = await response.json();
-            if (result.success) {
+            
+            if (result.success && result.data) {
                 allIcons = result.data;
-                displayIcons(allIcons);
+                if (allIcons.length === 0) {
+                    grid.innerHTML = '<p style="text-align:center; color:#7f8c8d;">Database is connected, but no icons found. Upload some from Admin Panel!</p>';
+                } else {
+                    displayIcons(allIcons);
+                }
+            } else {
+                throw new Error(result.message || 'Unknown error occurred while fetching data.');
             }
         } catch (error) {
             console.error('Failed to load icons:', error);
+            // সমস্যার কারণ স্ক্রিনে দেখানোর ব্যবস্থা
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; padding: 20px; background: #f8d7da; color: #721c24; border-radius: 8px; text-align: center;">
+                    <strong>Error Loading Icons:</strong> ${error.message} <br>
+                    <small>Check if your database is connected or API URL is correct.</small>
+                </div>`;
         }
     }
 
-    // ২. আইকনগুলো গ্রিড আকারে স্ক্রিনে দেখানো (সরাসরি SVG এপিআই রুট ব্যবহার করে)
     function displayIcons(icons) {
         const grid = document.getElementById('iconsGrid');
         grid.innerHTML = '';
-
-        if(icons.length === 0) {
-            grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#95a5a6;">No icons found!</p>';
-            return;
-        }
-
         icons.forEach(icon => {
             const card = document.createElement('div');
             card.className = 'icon-card';
-            
-            // আমাদের নতুন তৈরি করা SVG রুট লিঙ্ক
             const svgUrl = `${SERVER_URL}/api/icons/svg/${icon.id}`;
-            const fontClassName = `webibis-icons-${icon.icon_name}`;
-            
             card.innerHTML = `
-                <div class="icon-img-box">
-                    <img src="${svgUrl}" alt="${icon.icon_name}">
-                </div>
+                <div class="icon-img-box"><img src="${svgUrl}" alt="${icon.icon_name}"></div>
                 <div class="icon-name">${icon.icon_name}</div>
             `;
-            
-            card.onclick = () => openModal(icon.icon_name, fontClassName, svgUrl);
+            card.onclick = () => openModal(icon.icon_name, `webibis-icons-${icon.icon_name}`, svgUrl);
             grid.appendChild(card);
         });
     }
 
-    // ৩. লাইভ সার্চ ফিল্টারিং
     function filterIcons() {
         const query = document.getElementById('searchBar').value.toLowerCase().trim();
-        const filtered = allIcons.filter(icon => 
-            icon.icon_name.includes(query) || (icon.tags && icon.tags.toLowerCase().includes(query))
-        );
-        displayIcons(filtered);
+        displayIcons(allIcons.filter(icon => icon.icon_name.includes(query) || (icon.tags && icon.tags.toLowerCase().includes(query))));
     }
 
-    // ৪. CDN লিঙ্ক কপি করা
-    function copyCDN() {
-        const linkText = document.getElementById('cdnLink').innerText;
-        navigator.clipboard.writeText(linkText);
-        alert('CDN Link copied to clipboard! 📋\nPaste it into your HTML <head> tag.');
-    }
-
-    // ৫. মডাল ওপেন করা
     function openModal(name, className, svgUrl) {
         document.getElementById('modalIconName').innerText = name.toUpperCase();
         document.getElementById('modalPreviewImg').src = svgUrl;
-        // ইউজার তার নিজের প্রজেক্টে ফন্ট ক্লাস হিসেবে যেভাবে ব্যবহার করবে:
         document.getElementById('codeToCopy').innerText = `<i class="${className}"></i>`;
         document.getElementById('codeModal').style.display = 'flex';
     }
 
-    window.closeModal = function() {
-        document.getElementById('codeModal').style.display = 'none';
-    }
-
-    // ৬. আইকন ট্যাগ কপি করা
-    function copyIconTag() {
-        const code = document.getElementById('codeToCopy').innerText;
-        navigator.clipboard.writeText(code);
-        alert('HTML Tag copied! Just paste it into your external project. 🚀');
-        closeModal();
-    }
+    window.closeModal = function() { document.getElementById('codeModal').style.display = 'none'; }
+    function copyCDN() { navigator.clipboard.writeText(document.getElementById('cdnLink').innerText); alert('CDN Link copied!'); }
+    function copyIconTag() { navigator.clipboard.writeText(document.getElementById('codeToCopy').innerText); alert('HTML Tag copied!'); closeModal(); }
 
     window.onload = loadIcons;
 </script>
