@@ -19,16 +19,15 @@ async function buildFont() {
 
         // ফোল্ডার প্রস্তুতি
         if (!fs.existsSync(tempSvgDir)) {
-            fs.mkdirSync(tempSvgDir);
+            fs.mkdirSync(tempSvgDir, { recursive: true });
         } else {
             fs.readdirSync(tempSvgDir).forEach(file => fs.unlinkSync(path.join(tempSvgDir, file)));
         }
 
-        // SVG ফাইলগুলো তৈরি করা এবং ক্লিন করা
+        // SVG ফাইলগুলো তৈরি করা
         rows.forEach(icon => {
             const fileName = `${icon.icon_name.toLowerCase().replace(/\s+/g, '-')}.svg`;
-            
-            // হার্ডকোডেড উইডথ/হাইট সরিয়ে ফেলা যাতে ফন্ট জেনারেটর সঠিকভাবে প্রসেস করতে পারে
+            // SVG ক্লিন করা
             let cleanSvg = icon.svg_code
                 .replace(/width="[^"]*"/g, '')
                 .replace(/height="[^"]*"/g, '');
@@ -36,8 +35,8 @@ async function buildFont() {
             fs.writeFileSync(path.join(tempSvgDir, fileName), cleanSvg);
         });
 
-        // ফন্ট জেনারেশন শুরু
-        await svgtofont.default({
+        // ফন্ট জেনারেশন - কলিং পদ্ধতিতে পরিবর্তন (এটি এরর এড়াতে সাহায্য করবে)
+        await svgtofont({
             src: tempSvgDir,
             dist: outputDistDir,
             fontName: 'webibis-icons',
@@ -45,18 +44,13 @@ async function buildFont() {
             startUnicode: 0xea01,
             svg: true,
             emptyDist: true,
-            // নিচের সেটিংসগুলো আইকন বক্স হওয়া এবং এরর ফিক্স করবে
             fontHeight: 512, 
             normalize: true, 
             selector: '.webibis-icons',
-            website: {
-                title: "Webibis Icons",
-                version: "1.0.0",
-                meta: {
-                    description: "Custom SVG Icon Pack converted to Web Font.",
-                    keywords: "icons,webfont,svg,webibis"
-                }
-            }
+            // গুরুত্বপূর্ণ: এটি স্ট্রিমিং এরর কমাতে সাহায্য করে
+            useNameAsUnicode: true,
+            // ডিফল্ট ওয়েবসাইট জেনারেশন বন্ধ রাখা, কারণ এটি অনেক সময় এরর দেয়
+            website: null 
         });
 
         console.log('🎉 Web font auto-generated successfully!');
@@ -69,7 +63,7 @@ async function buildFont() {
         
         return true;
     } catch (error) {
-        console.error('Error auto-generating font:', error);
+        console.error('Critical Error in buildFont:', error);
         return false;
     }
 }
