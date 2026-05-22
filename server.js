@@ -10,13 +10,13 @@ const buildFont = require('./generate-font');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'webibis_secret_2026_key';
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Auth Middleware (যেখানে কপি করার জন্য লগইন চেক দরকার)
+// Auth Middleware
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization'];
     if (!token) return res.status(403).json({ success: false, message: 'No token provided!' });
@@ -30,19 +30,17 @@ const verifyToken = (req, res, next) => {
 
 // --- AUTH ROUTES ---
 
-// রেজিস্ট্রেশন
 app.post('/api/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
-        await db.query('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, hashedPassword]);
+        await db.query('INSERT INTO users (username, email, password, is_active) VALUES (?, ?, ?, ?)', [username, email, hashedPassword, 1]);
         res.status(201).json({ success: true, message: 'User registered successfully!' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Registration failed', error: error.message });
     }
 });
 
-// লগইন
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -52,10 +50,28 @@ app.post('/api/login', async (req, res) => {
         const isMatch = await bcrypt.compare(password, users[0].password);
         if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid password' });
         
+        // লগইন করলে active স্ট্যাটাস আপডেট (যদি আপনার টেবিলে থাকে)
+        await db.query('UPDATE users SET is_active = 1 WHERE id = ?', [users[0].id]);
+        
         const token = jwt.sign({ id: users[0].id }, JWT_SECRET, { expiresIn: '24h' });
         res.status(200).json({ success: true, token });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Login failed', error: error.message });
+    }
+});
+
+// --- ADMIN ROUTES (New) ---
+app.get('/api/users/stats', async (req, res) => {
+    try {
+        const [users] = await db.query('SELECT username as name, email, is_active FROM users');
+        res.json({
+            success: true,
+            totalCount: users.length,
+            activeCount: users.filter(u => u.is_active === 1).length,
+            users: users
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error fetching stats' });
     }
 });
 
@@ -86,9 +102,9 @@ app.get('/api/icons/svg/:id', async (req, res) => {
     res.send(rows[0].svg_code);
 });
 
-// প্রোটেক্টেড কপি রাউট (যদি আপনার কপি করার জন্য কোনো এপিআই কল থাকে)
-app.get('/api/icons/download/:id', verifyToken, (req, res) => {
-    res.json({ success: true, message: 'Authorized to copy!' });
+app.delete('/api/icons/delete/:id', async (req, res) => {
+    await db.query('DELETE FROM icons WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
 });
 
 app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT} 🚀`));
