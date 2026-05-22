@@ -12,7 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'webibis_secret_2026_key';
 
-// --- DATABASE AUTO-SETUP ---
+// --- DATABASE AUTO-SETUP & CHECK ---
 const setupDatabase = async () => {
     try {
         // users টেবিল না থাকলে তৈরি করা
@@ -26,6 +26,11 @@ const setupDatabase = async () => {
             )
         `);
         console.log("Database table 'users' is ready.");
+
+        // ডাটাবেসে কতজন ইউজার আছে তা চেক করা (ডিবাগিংয়ের জন্য)
+        const [rows] = await db.query('SELECT COUNT(*) as count FROM users');
+        console.log("Total users found in database:", rows[0].count);
+
     } catch (error) {
         console.error("Database setup error:", error.message);
     }
