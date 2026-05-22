@@ -12,6 +12,26 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'webibis_secret_2026_key';
 
+// --- DATABASE AUTO-SETUP ---
+const setupDatabase = async () => {
+    try {
+        // users টেবিল না থাকলে তৈরি করা
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(255),
+                email VARCHAR(255),
+                password VARCHAR(255),
+                is_active TINYINT DEFAULT 0
+            )
+        `);
+        console.log("Database table 'users' is ready.");
+    } catch (error) {
+        console.error("Database setup error:", error.message);
+    }
+};
+setupDatabase();
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -50,7 +70,6 @@ app.post('/api/login', async (req, res) => {
         const isMatch = await bcrypt.compare(password, users[0].password);
         if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid password' });
         
-        // লগইন করলে active স্ট্যাটাস আপডেট (যদি আপনার টেবিলে থাকে)
         await db.query('UPDATE users SET is_active = 1 WHERE id = ?', [users[0].id]);
         
         const token = jwt.sign({ id: users[0].id }, JWT_SECRET, { expiresIn: '24h' });
@@ -60,7 +79,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// --- ADMIN ROUTES (New) ---
+// --- ADMIN ROUTES ---
 app.get('/api/users/stats', async (req, res) => {
     try {
         const [users] = await db.query('SELECT username as name, email, is_active FROM users');
