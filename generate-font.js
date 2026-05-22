@@ -6,7 +6,6 @@ const db = require('./db');
 const tempSvgDir = path.join(__dirname, 'temp_svgs');
 const outputDistDir = path.join(__dirname, 'public', 'dist');
 
-// ফাংশনটিকে async হিসেবে ডিফাইন করলাম যাতে অন্য ফাইল থেকে কল করা যায়
 async function buildFont() {
     try {
         console.log('Auto-Building Fonts: Fetching icons from database... ⏳');
@@ -18,15 +17,23 @@ async function buildFont() {
             return false;
         }
 
+        // ফোল্ডার প্রস্তুতি
         if (!fs.existsSync(tempSvgDir)) {
             fs.mkdirSync(tempSvgDir);
         } else {
             fs.readdirSync(tempSvgDir).forEach(file => fs.unlinkSync(path.join(tempSvgDir, file)));
         }
 
+        // SVG ফাইলগুলো তৈরি করা এবং ক্লিন করা
         rows.forEach(icon => {
-            const fileName = `${icon.icon_name}.svg`;
-            fs.writeFileSync(path.join(tempSvgDir, fileName), icon.svg_code);
+            const fileName = `${icon.icon_name.toLowerCase().replace(/\s+/g, '-')}.svg`;
+            
+            // হার্ডকোডেড উইডথ/হাইট সরিয়ে ফেলা যাতে ফন্ট জেনারেটর সঠিকভাবে প্রসেস করতে পারে
+            let cleanSvg = icon.svg_code
+                .replace(/width="[^"]*"/g, '')
+                .replace(/height="[^"]*"/g, '');
+                
+            fs.writeFileSync(path.join(tempSvgDir, fileName), cleanSvg);
         });
 
         // ফন্ট জেনারেশন শুরু
@@ -38,22 +45,23 @@ async function buildFont() {
             startUnicode: 0xea01,
             svg: true,
             emptyDist: true,
+            // নিচের সেটিংসগুলো আইকন বক্স হওয়া এবং এরর ফিক্স করবে
+            fontHeight: 512, 
+            normalize: true, 
+            selector: '.webibis-icons',
             website: {
                 title: "Webibis Icons",
-                logo: "",
                 version: "1.0.0",
                 meta: {
                     description: "Custom SVG Icon Pack converted to Web Font.",
                     keywords: "icons,webfont,svg,webibis"
-                },
-                description: "Preview of your custom web font icons.",
-                links: [{ title: "Font Class", url: "index.html" }]
+                }
             }
         });
 
         console.log('🎉 Web font auto-generated successfully!');
         
-        // সাময়িক ফাইল ডিলিট
+        // সাময়িক ফাইল ডিলিট
         if (fs.existsSync(tempSvgDir)) {
             fs.readdirSync(tempSvgDir).forEach(file => fs.unlinkSync(path.join(tempSvgDir, file)));
             fs.rmdirSync(tempSvgDir);
@@ -66,5 +74,4 @@ async function buildFont() {
     }
 }
 
-// এই লাইনটির মাধ্যমে ফাংশনটিকে অন্য ফাইলে ব্যবহারের জন্য এক্সপোর্ট করলাম
 module.exports = buildFont;
