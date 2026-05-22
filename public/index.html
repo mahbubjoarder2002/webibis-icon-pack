@@ -40,27 +40,54 @@
 
     <style>
         :root { --primary: #1abc9c; --dark: #2c3e50; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; }
-        header { background: linear-gradient(135deg, var(--dark), #34495e); color: white; text-align: center; padding: 60px 20px; }
-        header h1 { margin: 0; font-size: 2.5rem; letter-spacing: 1px; }
-        header p { margin: 10px 0 30px; font-size: 1.1rem; color: #b2bec3; }
-        
-        .cdn-box { max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.2); }
-        .cdn-box code { color: #ffeaa7; font-family: monospace; font-size: 0.95rem; overflow-x: auto; white-space: nowrap; margin-right: 10px; }
-        .cdn-box button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        
-        .search-container { max-width: 1000px; margin: 40px auto 20px; padding: 0 20px; }
-        #searchBar { width: 100%; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 30px; outline: none; }
-        
-        .icons-grid { max-width: 1000px; margin: 0 auto 50px; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; }
-        .icon-card { background: white; border: 1px solid #e1e8ed; border-radius: 8px; padding: 25px 10px; text-align: center; cursor: pointer; transition: all 0.3s ease; }
-        .icon-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
-        
-        /* Modal Style */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; }
-        .copy-code-box { background: #f1f2f6; padding: 12px; border-radius: 6px; font-family: monospace; margin: 15px 0; border: 1px solid #dfe4ea; text-align: left; }
-        .btn-action { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; }
+header { background: linear-gradient(135deg, var(--dark), #34495e); color: white; text-align: center; padding: 60px 20px; }
+header h1 { margin: 0; font-size: 2.5rem; letter-spacing: 1px; }
+header p { margin: 10px 0 30px; font-size: 1.1rem; color: #b2bec3; }
+
+.cdn-box { max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.2); }
+.cdn-box code { color: #ffeaa7; font-family: monospace; font-size: 0.95rem; overflow-x: auto; white-space: nowrap; margin-right: 10px; }
+.cdn-box button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+.search-container { max-width: 1000px; margin: 40px auto 20px; padding: 0 20px; }
+#searchBar { width: 100%; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 30px; outline: none; box-sizing: border-box; }
+
+/* Grid Layout Fix */
+.icons-grid { 
+    max-width: 1000px; 
+    margin: 0 auto 50px; 
+    padding: 0 20px; 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+    gap: 20px; 
+}
+
+/* Card Styling */
+.icon-card { 
+    background: white; 
+    border: 1px solid #e1e8ed; 
+    border-radius: 8px; 
+    padding: 20px; 
+    text-align: center; 
+    cursor: pointer; 
+    transition: all 0.3s ease; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center;
+    min-height: 140px;
+}
+.icon-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+
+/* Image container fix */
+.icon-img-box { width: 50px; height: 50px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; }
+.icon-img-box img { width: 100%; height: 100%; object-fit: contain; }
+
+/* Modal Style */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+.modal-content { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; }
+.copy-code-box { background: #f1f2f6; padding: 12px; border-radius: 6px; font-family: monospace; margin: 15px 0; border: 1px solid #dfe4ea; text-align: left; overflow-x: auto; }
+.btn-action { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
