@@ -5,7 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webibis Icons - Admin Dashboard</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; color: #333; }
+        body .nav-menu { background: #34495e; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; }
+.nav-menu a { color: white; text-decoration: none; font-weight: bold; padding: 5px 10px; border-radius: 4px; }
+.nav-menu a:hover { background: #1abc9c; }
+.nav-menu a.active { background: #1abc9c; }
+
+
+
+        { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; color: #333; }
         .container { max-width: 800px; background: #fff; margin: 20px auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .form-group { margin-bottom: 15px; }
@@ -24,9 +31,14 @@
 </head>
 <body>
 
-
-
 <div class="container">
+<div class="nav-menu">
+    <a href="admin.html" id="nav-dashboard">Dashboard</a>
+    <a href="stats.html" id="nav-stats">Statistics</a>
+    <a href="manage-icons.html" id="nav-manage">Manage Icons</a>
+</div>
+
+    
     <h2>Upload New Icon 🚀</h2>
     <form id="iconForm">
         <div class="form-group"><input type="text" id="icon_name" placeholder="Icon Name" required></div>
@@ -47,6 +59,12 @@
 <script>
     const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
 
+    // Current page highlight korar jonyo
+const path = window.location.pathname;
+if (path.includes('admin.html')) document.getElementById('nav-dashboard').classList.add('active');
+else if (path.includes('stats.html')) document.getElementById('nav-stats').classList.add('active');
+else if (path.includes('manage-icons.html')) document.getElementById('nav-manage').classList.add('active');
+
     document.getElementById('iconForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const data = {
@@ -66,23 +84,6 @@
         msg.innerText = result.message;
         if(response.ok) { document.getElementById('iconForm').reset(); loadIcons(); }
     });
-
-    async function loadIcons() {
-        const response = await fetch(`${SERVER_URL}/api/icons/all`);
-        const result = await response.json();
-        const list = document.getElementById('iconList');
-        list.innerHTML = '';
-        result.data.forEach(icon => {
-            list.innerHTML += `<tr class="icon-row">
-                <td><img class="icon-preview" src="${SERVER_URL}/api/icons/svg/${icon.id}" alt="icon"></td>
-                <td><strong>${icon.icon_name}</strong></td>
-                <td>${icon.tags || '-'}</td>
-                <td><button class="delete-btn" onclick="deleteIcon(${icon.id})">Delete</button></td>
-            </tr>`;
-        });
-    }
-
-   
 
     loadIcons();
 </script>

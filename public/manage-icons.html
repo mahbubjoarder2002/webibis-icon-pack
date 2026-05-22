@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <title>Manage Icons - Webibis</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; color: #333; }
+        body 
+.nav-menu { background: #34495e; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; }
+.nav-menu a { color: white; text-decoration: none; font-weight: bold; padding: 5px 10px; border-radius: 4px; }
+.nav-menu a:hover { background: #1abc9c; }
+.nav-menu a.active { background: #1abc9c; }
+
+        { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; color: #333; }
         .container { max-width: 800px; background: #fff; margin: 20px auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .back-btn { display: inline-block; margin-bottom: 20px; color: #1abc9c; font-weight: bold; text-decoration: none; }
         .form-group { margin-bottom: 15px; }
@@ -21,24 +27,15 @@
     </style>
 </head>
 <body>
+
+    
 <div class="container">
-    <a href="admin.html" class="back-btn">← Back to Dashboard</a>
-    <h2>Upload New Icon 🚀</h2>
-    <form id="iconForm">
-        <div class="form-group"><input type="text" id="icon_name" placeholder="Icon Name" required></div>
-        <div class="form-group">
-            <select id="category" required>
-                <option value="">Select Category</option>
-                <option value="Interface">Interface</option>
-                <option value="Business">Business</option>
-            </select>
-        </div>
-        <div class="form-group"><input type="text" id="tags" placeholder="Tags (comma separated)"></div>
-        <div class="form-group"><textarea id="svg_code" placeholder="Paste SVG Code" required></textarea></div>
-        <button type="submit">Save Icon</button>
-    </form>
-    <div id="message"></div>
+    <div class="nav-menu">
+    <a href="admin.html" id="nav-dashboard">Dashboard</a>
+    <a href="stats.html" id="nav-stats">Statistics</a>
+    <a href="manage-icons.html" id="nav-manage">Manage Icons</a>
 </div>
+
 
 <div class="container">
     <h2>Manage Icons 🗑️</h2>
@@ -52,25 +49,11 @@
 <script>
     const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
 
-    document.getElementById('iconForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = {
-            icon_name: document.getElementById('icon_name').value.trim().toLowerCase(),
-            category: document.getElementById('category').value,
-            tags: document.getElementById('tags').value.trim(),
-            svg_code: document.getElementById('svg_code').value.trim()
-        };
-        const res = await fetch(`${SERVER_URL}/api/icons/add`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-        const result = await res.json();
-        const msg = document.getElementById('message');
-        msg.className = res.ok ? 'success' : 'error';
-        msg.innerText = result.message;
-        if(res.ok) { document.getElementById('iconForm').reset(); loadIcons(); }
-    });
+    // Current page highlight korar jonyo
+const path = window.location.pathname;
+if (path.includes('admin.html')) document.getElementById('nav-dashboard').classList.add('active');
+else if (path.includes('stats.html')) document.getElementById('nav-stats').classList.add('active');
+else if (path.includes('manage-icons.html')) document.getElementById('nav-manage').classList.add('active');
 
     async function loadIcons() {
         const res = await fetch(`${SERVER_URL}/api/icons/all`);

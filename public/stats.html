@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <title>User Statistics - Admin</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; }
+        body 
+
+.nav-menu { background: #34495e; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; }
+.nav-menu a { color: white; text-decoration: none; font-weight: bold; padding: 5px 10px; border-radius: 4px; }
+.nav-menu a:hover { background: #1abc9c; }
+.nav-menu a.active { background: #1abc9c; }
+
+        { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; }
         .container { max-width: 800px; background: #fff; margin: auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .stats-box { display: flex; gap: 15px; margin-bottom: 20px; }
         .stat-card { flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #ddd; text-align: center; font-weight: bold; }
@@ -16,6 +23,12 @@
 <body>
 
 <div class="container">
+
+    <div class="nav-menu">
+    <a href="admin.html" id="nav-dashboard">Dashboard</a>
+    <a href="stats.html" id="nav-stats">Statistics</a>
+    <a href="manage-icons.html" id="nav-manage">Manage Icons</a>
+</div>
     <a href="admin.html" class="back-btn">← Back to Admin Panel</a>
     <h2>User Statistics 👥</h2>
     <div class="stats-box">
@@ -30,6 +43,14 @@
 
 <script>
     const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
+
+
+// Current page highlight korar jonyo
+const path = window.location.pathname;
+if (path.includes('admin.html')) document.getElementById('nav-dashboard').classList.add('active');
+else if (path.includes('stats.html')) document.getElementById('nav-stats').classList.add('active');
+else if (path.includes('manage-icons.html')) document.getElementById('nav-manage').classList.add('active');
+    
 
     async function loadUserStats() {
         try {
