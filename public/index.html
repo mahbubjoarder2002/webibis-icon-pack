@@ -60,18 +60,20 @@
 
 <div class="modal" id="loginModal">
     <div class="modal-content">
-        <h3>Login to Copy</h3>
-        <input type="email" id="loginEmail" placeholder="Email" style="width:90%; padding:10px; margin:5px 0;">
-        <input type="password" id="loginPass" placeholder="Password" style="width:90%; padding:10px; margin:5px 0;">
-        <button class="btn-action" onclick="handleLogin()">Login</button>
-        <p>Or</p>
-        <button class="btn-action" style="background:#4285F4" onclick="alert('Google Login coming soon!')">Login with Google</button>
+        <h3 id="authTitle">Login to Continue</h3>
+        <input type="text" id="authUsername" placeholder="Username (Signup only)" style="width:90%; padding:10px; margin:5px 0; display:none;">
+        <input type="email" id="authEmail" placeholder="Email" style="width:90%; padding:10px; margin:5px 0;">
+        <input type="password" id="authPass" placeholder="Password" style="width:90%; padding:10px; margin:5px 0;">
+        <button class="btn-action" id="authBtn" onclick="handleAuth()">Login</button>
+        <p id="toggleText" style="cursor:pointer; color:var(--primary);" onclick="toggleAuthMode()">Don't have an account? Signup</p>
+        <button class="btn-action" style="background:#4285F4" onclick="alert('Google Auth integration requires Firebase setup.')">Login with Google</button>
         <button class="btn-action" style="background:#95a5a6" onclick="closeLoginModal()">Cancel</button>
     </div>
 </div>
 
 <script>
     let allIcons = [];
+    let isLoginMode = true; // লগইন নাকি সাইনআপ তা ট্র্যাক করার জন্য
     const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
 
     async function loadIcons() {
@@ -92,6 +94,41 @@
         `).join('');
     }
 
+    // Auth মোড টগল ফাংশন
+    function toggleAuthMode() {
+        isLoginMode = !isLoginMode;
+        document.querySelector('#loginModal h3').innerText = isLoginMode ? 'Login to Continue' : 'Create Account';
+        document.getElementById('authBtn').innerText = isLoginMode ? 'Login' : 'Signup';
+        document.getElementById('authUsername').style.display = isLoginMode ? 'none' : 'block';
+        document.getElementById('toggleText').innerText = isLoginMode ? "Don't have an account? Signup" : "Already have an account? Login";
+    }
+
+    // নতুন Auth হ্যান্ডলার
+    async function handleAuth() {
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPass').value;
+        const username = document.getElementById('authUsername').value;
+        const endpoint = isLoginMode ? '/api/login' : '/api/register';
+
+        const res = await fetch(`${SERVER_URL}${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, username: isLoginMode ? undefined : username })
+        });
+        
+        const json = await res.json();
+        if (json.success) {
+            if (isLoginMode) {
+                localStorage.setItem('user_token', json.token);
+                closeLoginModal();
+                alert("Login Successful!");
+            } else {
+                alert("Registration successful! Please login.");
+                toggleAuthMode(); // লগইন মোডে ফিরে যাওয়া
+            }
+        } else { alert(json.message || "Action failed!"); }
+    }
+
     function openModal(name, className) {
         document.getElementById('modalIconName').innerText = name.toUpperCase();
         document.getElementById('codeToCopy').innerText = `<i class="${className}"></i>`;
@@ -110,22 +147,6 @@
         navigator.clipboard.writeText(document.getElementById('codeToCopy').innerText);
         btn.innerText = "Copied!";
         setTimeout(() => { btn.innerText = "Copy HTML Tag"; closeModal(); }, 1500);
-    }
-
-    async function handleLogin() {
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPass').value;
-        const res = await fetch(`${SERVER_URL}/api/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-        const json = await res.json();
-        if (json.success) {
-            localStorage.setItem('user_token', json.token);
-            closeLoginModal();
-            alert("Login Successful!");
-        } else { alert("Login failed!"); }
     }
 
     function copyText(id, btn) {
