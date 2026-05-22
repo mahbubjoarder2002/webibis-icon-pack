@@ -73,7 +73,7 @@
         
         const msgDiv = document.getElementById('message');
         msgDiv.style.display = 'none';
-        msgDiv.className = ''; // রিসেট ক্লাস
+        msgDiv.className = '';
 
         const data = {
             icon_name: document.getElementById('icon_name').value.trim().toLowerCase(),
@@ -90,20 +90,23 @@
                 body: JSON.stringify(data)
             });
 
-            const result = await response.json();
+            // সার্ভার থেকে আসা রেসপন্স চেক করা
+            const result = await response.json().catch(() => ({}));
 
-            if (result.success) {
+            if (response.ok) {
                 msgDiv.className = 'success';
                 msgDiv.innerText = result.message || 'Icon uploaded successfully! 🎉';
                 document.getElementById('iconForm').reset();
             } else {
+                // সার্ভার ইরর হলে সেটি এখানে দেখাবে
                 msgDiv.className = 'error';
-                msgDiv.innerText = result.message || 'Failed to upload icon!';
+                msgDiv.innerText = 'Error: ' + (result.message || 'Server error occurred!');
+                console.error('Server response:', result);
             }
         } catch (error) {
             console.error('Upload error:', error);
             msgDiv.className = 'error';
-            msgDiv.innerText = 'Failed to connect to the server!';
+            msgDiv.innerText = 'Failed to connect to the server. Please check your internet or server logs.';
         }
     });
 </script>
