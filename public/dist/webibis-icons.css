@@ -1,28 +1,23 @@
 @font-face {
   font-family: "webibis-icons";
   src: url('webibis-icons.eot?t=1779390817682'); /* IE9*/
-  src: url('webibis-icons.eot?t=1779390817682#iefix') format('embedded-opentype') /* IE6-IE8 */,
-  url('webibis-icons.woff2?t=1779390817682') format('woff2'),
-  url('webibis-icons.woff?t=1779390817682') format('woff'),
-  url('webibis-icons.ttf?t=1779390817682') format('truetype'),
-  url('webibis-icons.svg?t=1779390817682') format('svg');
+  src: url('webibis-icons.eot?t=1779390817682#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('webibis-icons.woff2?t=1779390817682') format('woff2'),
+       url('webibis-icons.woff?t=1779390817682') format('woff'),
+       url('webibis-icons.ttf?t=1779390817682') format('truetype'),
+       url('webibis-icons.svg?t=1779390817682') format('svg');
 }
 
 [class^="webibis-icons-"], [class*=" webibis-icons-"] {
   font-family: 'webibis-icons' !important;
-  font-style:normal;
+  font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   display: inline-block;
-  font-size: 1em; 
+  font-size: 1em; /* এটি টেক্সটের সমান সাইজ নিশ্চিত করবে */
   line-height: 1;
   vertical-align: middle;
 }
 
-
-
-
 .webibis-icons-home::before { content: "\ea01"; }
 .webibis-icons-user::before { content: "\ea02"; }
-
-
