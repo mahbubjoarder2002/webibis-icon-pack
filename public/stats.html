@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Statistics - Admin</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; }
+        .container { max-width: 800px; background: #fff; margin: auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .stats-box { display: flex; gap: 15px; margin-bottom: 20px; }
+        .stat-card { flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #ddd; text-align: center; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #1abc9c; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="admin.html" class="back-btn">← Back to Admin Panel</a>
+    <h2>User Statistics 👥</h2>
+    <div class="stats-box">
+        <div class="stat-card">Total Signups: <br><span id="totalUsers" style="color:#1abc9c; font-size: 1.5rem;">0</span></div>
+        <div class="stat-card">Currently Active: <br><span id="activeUsers" style="color:#e67e22; font-size: 1.5rem;">0</span></div>
+    </div>
+    <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Status</th></tr></thead>
+        <tbody id="userList"></tbody>
+    </table>
+</div>
+
+<script>
+    const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
+
+    async function loadUserStats() {
+        try {
+            const response = await fetch(`${SERVER_URL}/api/users/stats`);
+            const result = await response.json();
+            if (result.success) {
+                document.getElementById('totalUsers').innerText = result.totalCount;
+                document.getElementById('activeUsers').innerText = result.activeCount;
+                const list = document.getElementById('userList');
+                list.innerHTML = result.users.map(user => `
+                    <tr>
+                        <td>${user.name}</td>
+                        <td>${user.email}</td>
+                        <td><span style="color:${user.is_active ? '#27ae60' : '#95a5a6'}">● ${user.is_active ? 'Active' : 'Offline'}</span></td>
+                    </tr>
+                `).join('');
+            }
+        } catch (err) { console.error('Error loading stats:', err); }
+    }
+    loadUserStats();
+</script>
+</body>
+</html>

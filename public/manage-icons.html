@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webibis Icons - Admin Dashboard</title>
+    <title>Manage Icons - Webibis</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; color: #333; }
         .container { max-width: 800px; background: #fff; margin: 20px auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { display: inline-block; margin-bottom: 20px; color: #1abc9c; font-weight: bold; text-decoration: none; }
         .form-group { margin-bottom: 15px; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         button { background: #1abc9c; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
@@ -16,17 +15,14 @@
         .success { background: #d4edda; color: #155724; display: block !important; }
         .error { background: #f8d7da; color: #721c24; display: block !important; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; vertical-align: middle; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
         .icon-preview { width: 40px; height: 40px; }
         #searchBox { margin-bottom: 20px; padding: 12px; border: 2px solid #1abc9c; border-radius: 4px; width: 100%; }
-        .stats-link { background: #34495e; color: #fff; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-
-
-
 <div class="container">
+    <a href="admin.html" class="back-btn">← Back to Dashboard</a>
     <h2>Upload New Icon 🚀</h2>
     <form id="iconForm">
         <div class="form-group"><input type="text" id="icon_name" placeholder="Icon Name" required></div>
@@ -37,11 +33,20 @@
                 <option value="Business">Business</option>
             </select>
         </div>
-        <div class="form-group"><input type="text" id="tags" placeholder="Tags (comma separated, e.g., web, menu, nav)"></div>
+        <div class="form-group"><input type="text" id="tags" placeholder="Tags (comma separated)"></div>
         <div class="form-group"><textarea id="svg_code" placeholder="Paste SVG Code" required></textarea></div>
         <button type="submit">Save Icon</button>
     </form>
     <div id="message"></div>
+</div>
+
+<div class="container">
+    <h2>Manage Icons 🗑️</h2>
+    <input type="text" id="searchBox" placeholder="Search by name or tags..." onkeyup="filterTable()">
+    <table id="iconTable">
+        <thead><tr><th>Preview</th><th>Name</th><th>Tags</th><th>Action</th></tr></thead>
+        <tbody id="iconList"></tbody>
+    </table>
 </div>
 
 <script>
@@ -55,34 +60,44 @@
             tags: document.getElementById('tags').value.trim(),
             svg_code: document.getElementById('svg_code').value.trim()
         };
-        const response = await fetch(`${SERVER_URL}/api/icons/add`, {
+        const res = await fetch(`${SERVER_URL}/api/icons/add`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
         });
-        const result = await response.json();
+        const result = await res.json();
         const msg = document.getElementById('message');
-        msg.className = response.ok ? 'success' : 'error';
+        msg.className = res.ok ? 'success' : 'error';
         msg.innerText = result.message;
-        if(response.ok) { document.getElementById('iconForm').reset(); loadIcons(); }
+        if(res.ok) { document.getElementById('iconForm').reset(); loadIcons(); }
     });
 
     async function loadIcons() {
-        const response = await fetch(`${SERVER_URL}/api/icons/all`);
-        const result = await response.json();
+        const res = await fetch(`${SERVER_URL}/api/icons/all`);
+        const result = await res.json();
         const list = document.getElementById('iconList');
-        list.innerHTML = '';
-        result.data.forEach(icon => {
-            list.innerHTML += `<tr class="icon-row">
+        list.innerHTML = result.data.map(icon => `
+            <tr class="icon-row">
                 <td><img class="icon-preview" src="${SERVER_URL}/api/icons/svg/${icon.id}" alt="icon"></td>
                 <td><strong>${icon.icon_name}</strong></td>
                 <td>${icon.tags || '-'}</td>
                 <td><button class="delete-btn" onclick="deleteIcon(${icon.id})">Delete</button></td>
-            </tr>`;
-        });
+            </tr>
+        `).join('');
     }
 
-   
+    async function deleteIcon(id) {
+        if(!confirm('Are you sure?')) return;
+        await fetch(`${SERVER_URL}/api/icons/delete/${id}`, { method: 'DELETE' });
+        loadIcons();
+    }
+
+    function filterTable() {
+        const query = document.getElementById('searchBox').value.toLowerCase();
+        document.querySelectorAll('.icon-row').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none';
+        });
+    }
 
     loadIcons();
 </script>
