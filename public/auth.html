@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login / Signup - Webibis</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .auth-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 350px; }
+        h2 { text-align: center; color: #1e293b; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #4f46e5; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .toggle-btn { text-align: center; margin-top: 15px; cursor: pointer; color: #64748b; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="auth-card">
+    <h2 id="title">Login</h2>
+    <input type="text" id="username" placeholder="Username (Signup only)" style="display:none;">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="handleAuth()" id="mainBtn">Login</button>
+    <div class="toggle-btn" onclick="toggleMode()" id="toggleText">Don't have an account? Signup</div>
+</div>
+
+<script>
+    let isLogin = true;
+    function toggleMode() {
+        isLogin = !isLogin;
+        document.getElementById('title').innerText = isLogin ? 'Login' : 'Signup';
+        document.getElementById('mainBtn').innerText = isLogin ? 'Login' : 'Signup';
+        document.getElementById('username').style.display = isLogin ? 'none' : 'block';
+        document.getElementById('toggleText').innerText = isLogin ? "Don't have an account? Signup" : "Already have an account? Login";
+    }
+
+    async function handleAuth() {
+        const url = isLogin ? '/api/login' : '/api/register';
+        const data = {
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            username: document.getElementById('username').value
+        };
+
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        
+        if (json.success) {
+            if (isLogin) {
+                localStorage.setItem('user_token', json.token);
+                window.location.href = '/';
+            } else {
+                alert('Registration successful! Please login.');
+                toggleMode();
+            }
+        } else { alert(json.message); }
+    }
+</script>
+</body>
+</html>
