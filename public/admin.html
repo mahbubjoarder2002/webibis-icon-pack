@@ -5,18 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webibis Icons - Admin Panel</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 600px; background: #fff; margin: 30px auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h2 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
-        input[type="text"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        textarea { height: 120px; font-family: monospace; }
-        button { background: #1abc9c; color: #fff; border: none; padding: 12px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; width: 100%; font-weight: bold; transition: background 0.3s; }
-        button:hover { background: #16a085; }
-        #message { margin-top: 15px; padding: 10px; border-radius: 4px; display: none; font-size: 14px; text-align: center; }
-        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block !important; }
-        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block !important; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; color: #333; }
+        .container { max-width: 800px; background: #fff; margin: 20px auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #1abc9c; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
+        button.delete-btn { background: #e74c3c; width: auto; padding: 5px 10px; }
+        #message { margin: 15px 0; padding: 10px; display: none; text-align: center; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; display: block !important; }
+        .error { background: #f8d7da; color: #721c24; display: block !important; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        #searchBox { margin-bottom: 20px; padding: 12px; border: 2px solid #1abc9c; border-radius: 4px; width: 100%; }
     </style>
 </head>
 <body>
@@ -24,91 +26,83 @@
 <div class="container">
     <h2>Upload New Icon 🚀</h2>
     <form id="iconForm">
+        <div class="form-group"><input type="text" id="icon_name" placeholder="Icon Name (e.g., home)" required></div>
         <div class="form-group">
-            <label for="icon_name">Icon Name (e.g., home, user, bell)</label>
-            <input type="text" id="icon_name" placeholder="Enter icon name..." required>
-        </div>
-        
-        <div class="form-group">
-            <label for="category">Category</label>
             <select id="category" required>
                 <option value="">Select Category</option>
                 <option value="Interface">Interface</option>
                 <option value="Business">Business</option>
-                <option value="Communication">Communication</option>
-                <option value="Media">Media</option>
-                <option value="Design">Design</option>
             </select>
         </div>
-
-        <div class="form-group">
-            <label for="style">Style</label>
-            <select id="style">
-                <option value="regular">Regular (Line)</option>
-                <option value="solid">Solid (Filled)</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="tags">Tags / Keywords (Comma separated)</label>
-            <input type="text" id="tags" placeholder="e.g., house, building, main">
-        </div>
-
-        <div class="form-group">
-            <label for="svg_code">Raw SVG Code</label>
-            <textarea id="svg_code" placeholder="Paste your <svg>...</svg> code here" required></textarea>
-        </div>
-
-        <button type="submit">Save Icon to Database</button>
+        <div class="form-group"><textarea id="svg_code" placeholder="Paste SVG Code" required></textarea></div>
+        <button type="submit">Save Icon</button>
     </form>
-    
     <div id="message"></div>
+</div>
+
+<div class="container">
+    <h2>Manage Icons 🗑️</h2>
+    <input type="text" id="searchBox" placeholder="Search to delete..." onkeyup="filterTable()">
+    <table id="iconTable">
+        <thead><tr><th>Name</th><th>Category</th><th>Action</th></tr></thead>
+        <tbody id="iconList"></tbody>
+    </table>
 </div>
 
 <script>
     const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
 
+    // ১. আইকন আপলোড
     document.getElementById('iconForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        const msgDiv = document.getElementById('message');
-        msgDiv.style.display = 'none';
-        msgDiv.className = '';
-
         const data = {
             icon_name: document.getElementById('icon_name').value.trim().toLowerCase(),
             category: document.getElementById('category').value,
-            style: document.getElementById('style').value,
-            tags: document.getElementById('tags').value.trim(),
             svg_code: document.getElementById('svg_code').value.trim()
         };
-
-        try {
-            const response = await fetch(`${SERVER_URL}/api/icons/add`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            // সার্ভার থেকে আসা রেসপন্স চেক করা
-            const result = await response.json().catch(() => ({}));
-
-            if (response.ok) {
-                msgDiv.className = 'success';
-                msgDiv.innerText = result.message || 'Icon uploaded successfully! 🎉';
-                document.getElementById('iconForm').reset();
-            } else {
-                // সার্ভার ইরর হলে সেটি এখানে দেখাবে
-                msgDiv.className = 'error';
-                msgDiv.innerText = 'Error: ' + (result.message || 'Server error occurred!');
-                console.error('Server response:', result);
-            }
-        } catch (error) {
-            console.error('Upload error:', error);
-            msgDiv.className = 'error';
-            msgDiv.innerText = 'Failed to connect to the server. Please check your internet or server logs.';
-        }
+        const response = await fetch(`${SERVER_URL}/api/icons/add`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        const msg = document.getElementById('message');
+        msg.className = response.ok ? 'success' : 'error';
+        msg.innerText = result.message;
+        if(response.ok) { document.getElementById('iconForm').reset(); loadIcons(); }
     });
+
+    // ২. আইকন লিস্ট লোড করা
+    async function loadIcons() {
+        const response = await fetch(`${SERVER_URL}/api/icons/all`);
+        const result = await response.json();
+        const list = document.getElementById('iconList');
+        list.innerHTML = '';
+        result.data.forEach(icon => {
+            list.innerHTML += `<tr class="icon-row">
+                <td>${icon.icon_name}</td>
+                <td>${icon.category}</td>
+                <td><button class="delete-btn" onclick="deleteIcon(${icon.id})">Delete</button></td>
+            </tr>`;
+        });
+    }
+
+    // ৩. ডিলিট করা
+    async function deleteIcon(id) {
+        if(!confirm('Delete this icon?')) return;
+        await fetch(`${SERVER_URL}/api/icons/delete/${id}`, { method: 'DELETE' });
+        loadIcons();
+    }
+
+    // ৪. সার্চ ফিল্টার
+    function filterTable() {
+        const query = document.getElementById('searchBox').value.toLowerCase();
+        document.querySelectorAll('.icon-row').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none';
+        });
+    }
+
+    loadIcons();
 </script>
 </body>
 </html>

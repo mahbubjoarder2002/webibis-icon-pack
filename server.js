@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 const db = require('./db'); // db.js লিঙ্ক
-const buildFont = require('./generate-font'); // আমাদের ফন্ট বিল্ড ফাংশনটি লিঙ্ক করলাম 🚀
+const buildFont = require('./generate-font'); // ফন্ট বিল্ড ফাংশন
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,11 +22,9 @@ app.post('/api/icons/add', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Name, Category and SVG Code are required!' });
         }
 
-        // ডাটাবেজে ডেটা ইনসার্ট করা
         const query = `INSERT INTO icons (icon_name, category, style, svg_code, tags) VALUES (?, ?, ?, ?, ?)`;
         await db.query(query, [icon_name, category, style || 'regular', svg_code, tags || '']);
 
-        // ম্যাজিক পার্ট: ডাটাবেজে সেভ হওয়া মাত্রই ব্যাকগ্রাউন্ডে ফন্ট জেনারেট হবে!
         console.log('New icon saved! Triggering auto-build... ⚙️');
         const isBuilt = await buildFont(); 
 
@@ -35,7 +33,6 @@ app.post('/api/icons/add', async (req, res) => {
         } else {
             res.status(201).json({ success: true, message: 'Icon saved, but automatic font build had a minor issue.' });
         }
-
     } catch (error) {
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(400).json({ success: false, message: 'An icon with this name already exists!' });
@@ -54,7 +51,7 @@ app.get('/api/icons/all', async (req, res) => {
     }
 });
 
-// ৩. নির্দিষ্ট আইকনের SVG কোড পাওয়ার জন্য API
+// ৩. নির্দিষ্ট আইকনের SVG কোড পাওয়ার জন্য API
 app.get('/api/icons/svg/:id', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT svg_code FROM icons WHERE id = ?', [req.params.id]);
@@ -67,12 +64,27 @@ app.get('/api/icons/svg/:id', async (req, res) => {
     }
 });
 
+// ৪. আইকন ডিলিট করার API (নতুন)
+app.delete('/api/icons/delete/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await db.query('DELETE FROM icons WHERE id = ?', [id]);
+        
+        // ডিলিট করার পরেও ফন্ট আপডেট করে নেয়া ভালো
+        await buildFont(); 
+        
+        res.status(200).json({ success: true, message: 'Icon deleted successfully!' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+    }
+});
+
 // Base Route
 app.get('/', (req, res) => {
     res.send('Webibis Icon Pack API is running...');
 });
 
 // Server Listen
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT} 🚀`);
 });
