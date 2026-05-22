@@ -3,57 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webibis Icons - Free Custom Web Font</title>
+    <title>Webibis Icons - Premium Icon Library</title>
     <link rel="stylesheet" href="https://webibis-icon-pack.onrender.com/dist/webibis-icons.css">
     <style>
-        :root { --primary: #1abc9c; --dark: #2c3e50; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; }
-        header { background: linear-gradient(135deg, var(--dark), #34495e); color: white; text-align: center; padding: 60px 20px; }
-        header h1 { margin: 0; font-size: 2.5rem; letter-spacing: 1px; }
-        header p { margin: 10px 0 30px; font-size: 1.1rem; color: #b2bec3; }
+        :root { --primary: #6366f1; --dark: #1e293b; --bg: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: #334155; }
         
-        .cdn-box { max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.2); }
-        .cdn-box code { color: #ffeaa7; font-family: monospace; font-size: 0.95rem; overflow-x: auto; white-space: nowrap; margin-right: 10px; }
-        .cdn-box button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        /* Header */
+        header { background: var(--dark); color: white; padding: 80px 20px; text-align: center; }
+        header h1 { font-size: 3rem; margin: 0; background: linear-gradient(to right, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .search-container { max-width: 1000px; margin: 40px auto 20px; padding: 0 20px; }
-        #searchBar { width: 100%; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 30px; outline: none; transition: 0.3s; }
-        
-        .icons-grid { max-width: 1000px; margin: 0 auto 50px; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; }
-        .icon-card { background: white; border: 1px solid #e1e8ed; border-radius: 8px; padding: 25px 10px; text-align: center; cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; }
-        .icon-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
-        
-        .icon-img-box { width: 45px; height: 45px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; }
-        .icon-img-box img { width: 100%; height: 100%; object-fit: contain; }
-        
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 500px; text-align: center; }
-        .copy-code-box { background: #f1f2f6; padding: 12px; border-radius: 6px; font-family: monospace; margin: 15px 0; border: 1px solid #dfe4ea; text-align: left; }
+        .cdn-box { max-width: 650px; margin: 30px auto; background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 12px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
+        .cdn-box code { flex-grow: 1; color: #e2e8f0; font-family: monospace; overflow-x: auto; font-size: 0.9rem; }
+        .cdn-box button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-left: 15px; }
+
+        /* Search */
+        .search-container { max-width: 800px; margin: -30px auto 40px; padding: 0 20px; }
+        #searchBar { width: 100%; padding: 18px 25px; border-radius: 15px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); font-size: 1rem; outline: none; }
+
+        /* Grid */
+        .icons-grid { max-width: 1200px; margin: 0 auto 50px; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
+        .icon-card { background: white; border-radius: 16px; padding: 25px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; }
+        .icon-card:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.15); }
+        .icon-img-box img { width: 50px; height: 50px; margin-bottom: 15px; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; padding: 40px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; }
+        .preview-icon { font-size: 4rem; color: var(--primary); margin-bottom: 20px; }
+        .copy-code-box { background: #f1f5f9; padding: 15px; border-radius: 10px; font-family: monospace; margin: 20px 0; cursor: pointer; border: 1px dashed #cbd5e1; }
+        .btn-copy { background: var(--primary); color: white; border: none; padding: 12px 30px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Webibis Icon Pack 🚀</h1>
-    <p>High-quality custom vector icons as a lightweight web font.</p>
+    <h1>Webibis Icons</h1>
+    <p>Premium open-source vector icon library.</p>
     <div class="cdn-box">
         <code id="cdnLink">&lt;link rel="stylesheet" href="https://webibis-icon-pack.onrender.com/dist/webibis-icons.css"&gt;</code>
-        <button onclick="copyText('cdnLink', this)">Copy CDN</button>
+        <button onclick="copyText('cdnLink', this)">Copy</button>
     </div>
 </header>
 
 <div class="search-container">
-    <input type="text" id="searchBar" placeholder="Search icons..." oninput="filterIcons()">
+    <input type="text" id="searchBar" placeholder="Search icons (e.g. search, user, home)..." oninput="filterIcons()">
 </div>
 
 <div class="icons-grid" id="iconsGrid"></div>
 
 <div class="modal" id="codeModal">
     <div class="modal-content">
+        <div class="preview-icon" id="previewIcon"></div>
         <h3 id="modalIconName">Icon Name</h3>
-        <div class="copy-code-box" id="codeToCopy"></div>
-        <button class="btn-copy-tag" onclick="copyModalTag(this)">Copy HTML Tag</button>
-        <button class="modal-close" onclick="closeModal()">Close</button>
+        <div class="copy-code-box" id="codeToCopy" onclick="copyModalTag(this)"></div>
+        <button class="btn-copy" onclick="copyModalTag(this)">Click to Copy HTML</button>
     </div>
 </div>
 
@@ -63,64 +67,54 @@
 
     async function loadIcons() {
         try {
-            const response = await fetch(`${SERVER_URL}/api/icons/all`);
-            const result = await response.json();
-            if (result.success) {
-                allIcons = result.data;
-                displayIcons(allIcons);
-            }
-        } catch (error) {
-            console.error('Error loading:', error);
-        }
+            const res = await fetch(`${SERVER_URL}/api/icons/all`);
+            const json = await res.json();
+            if (json.success) { allIcons = json.data; displayIcons(allIcons); }
+        } catch (e) { console.error(e); }
     }
 
     function displayIcons(icons) {
         const grid = document.getElementById('iconsGrid');
-        grid.innerHTML = '';
-        icons.forEach(icon => {
-            // আইকনের নামকে ক্লিন (slugify) করা
-            const slug = icon.icon_name.toLowerCase().replace(/\s+/g, '-');
-            const className = `webibis-icons-${slug}`;
-            const svgUrl = `${SERVER_URL}/api/icons/svg/${icon.id}`;
-            
-            const card = document.createElement('div');
-            card.className = 'icon-card';
-            card.innerHTML = `
-                <div class="icon-img-box"><img src="${svgUrl}" alt="${icon.icon_name}"></div>
-                <div class="icon-name">${icon.icon_name}</div>
-            `;
-            card.onclick = () => openModal(icon.icon_name, className, svgUrl);
-            grid.appendChild(card);
-        });
+        grid.innerHTML = icons.map(icon => `
+            <div class="icon-card" onclick="openModal('${icon.icon_name}', 'webibis-icons-${icon.icon_name.toLowerCase().replace(/\s+/g, '-')}', '${SERVER_URL}/api/icons/svg/${icon.id}')">
+                <div class="icon-img-box"><img src="${SERVER_URL}/api/icons/svg/${icon.id}" alt="${icon.icon_name}"></div>
+                <small>${icon.icon_name}</small>
+            </div>
+        `).join('');
     }
 
     function openModal(name, className, svgUrl) {
-        document.getElementById('modalIconName').innerText = name.toUpperCase();
+        document.getElementById('modalIconName').innerText = name;
+        document.getElementById('previewIcon').innerHTML = `<i class="${className}" style="font-size: 3rem;"></i>`;
         document.getElementById('codeToCopy').innerText = `<i class="${className}"></i>`;
         document.getElementById('codeModal').style.display = 'flex';
     }
 
+    // ক্লোজ মডাল আউটসাইড ক্লিক
+    window.onclick = (e) => { if (e.target == document.getElementById('codeModal')) closeModal(); }
+    function closeModal() { document.getElementById('codeModal').style.display = 'none'; }
+    
     function copyText(id, btn) {
-        const text = document.getElementById(id).innerText;
-        navigator.clipboard.writeText(text);
-        btn.innerText = "Copied!";
-        setTimeout(() => btn.innerText = "Copy CDN", 2000);
+        navigator.clipboard.writeText(document.getElementById(id).innerText);
+        btn.innerText = "Done!";
+        setTimeout(() => btn.innerText = "Copy", 2000);
     }
 
-    function copyModalTag(btn) {
+    function copyModalTag(el) {
         const text = document.getElementById('codeToCopy').innerText;
         navigator.clipboard.writeText(text);
-        btn.innerText = "Copied!";
-        setTimeout(() => { btn.innerText = "Copy HTML Tag"; closeModal(); }, 1500);
+        const btn = document.querySelector('.btn-copy');
+        btn.innerText = "Copied to Clipboard!";
+        btn.style.background = "#22c55e";
+        setTimeout(() => { btn.innerText = "Click to Copy HTML"; btn.style.background = "#6366f1"; }, 2000);
     }
 
-    function closeModal() { document.getElementById('codeModal').style.display = 'none'; }
     function filterIcons() {
-        const query = document.getElementById('searchBar').value.toLowerCase();
-        displayIcons(allIcons.filter(i => i.icon_name.toLowerCase().includes(query)));
+        const q = document.getElementById('searchBar').value.toLowerCase();
+        displayIcons(allIcons.filter(i => i.icon_name.toLowerCase().includes(q)));
     }
 
-    window.onload = loadIcons;
+    loadIcons();
 </script>
 </body>
 </html>
