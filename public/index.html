@@ -270,6 +270,29 @@
         loadIcons(); 
         checkAuthStatus(); 
     };
+
+    // চ্যাট সেন্ড করার ফাংশনটি আপনার স্ক্রিপ্টের শুরুতে যুক্ত করুন
+    window.sendChatMessage = async function() {
+        const input = document.getElementById('chatInput');
+        const email = localStorage.getItem('user_email');
+        if (!input.value || !email) {
+            alert("Please login first to chat!");
+            return;
+        }
+
+        try {
+            // Firestore-এ মেসেজ আপডেট করা
+            await updateDoc(doc(db, "chats", email), {
+                messages: arrayUnion({ sender: 'User', text: input.value, time: new Date().toISOString() })
+            });
+        } catch (e) {
+            // যদি ডকুমেন্ট না থাকে তবে তৈরি করা
+            await setDoc(doc(db, "chats", email), { 
+                messages: [{ sender: 'User', text: input.value, time: new Date().toISOString() }] 
+            });
+        }
+        input.value = '';
+    }
 </script>
 </body>
 </html>
