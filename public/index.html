@@ -31,25 +31,11 @@
             signInWithPopup(auth, provider)
                 .then(async (result) => {
                     const user = result.user;
-                    
-                    // গুগল লগইন সফল হলে ডাটাবেসে ইউজার সিঙ্ক করা
-                    try {
-                        await fetch(`${SERVER_URL}/api/register`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                username: user.displayName || "Google User",
-                                email: user.email,
-                                password: "google-login-oauth-user"
-                            })
-                        });
-                    } catch (err) {
-                        console.error("Sync error:", err);
-                    }
-
                     localStorage.setItem('user_token', user.accessToken);
+                    localStorage.setItem('user_name', user.displayName || "User");
                     alert("Welcome, " + user.displayName + "! Login Successful.");
                     closeLoginModal();
+                    checkAuthStatus();
                 }).catch((error) => {
                     alert("Google Login Failed: " + error.message);
                 });
@@ -59,7 +45,11 @@
     <style>
         :root { --primary: #1abc9c; --dark: #2c3e50; --bg: #f8f9fa; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; }
-        header { background: linear-gradient(135deg, var(--dark), #34495e); color: white; text-align: center; padding: 60px 20px; }
+        header { background: linear-gradient(135deg, var(--dark), #34495e); color: white; text-align: center; padding: 60px 20px; position: relative; }
+        
+        .profile-box { position: absolute; top: 20px; right: 20px; display: flex; align-items: center; gap: 10px; }
+        .user-info { background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem; }
+        
         header h1 { margin: 0; font-size: 2.5rem; letter-spacing: 1px; }
         header p { margin: 10px 0 30px; font-size: 1.1rem; color: #b2bec3; }
 
@@ -85,6 +75,14 @@
 <body>
 
 <header>
+    <div class="profile-box">
+        <div id="userProfile" style="display: none;" class="user-info">
+            <span id="userName"></span>
+            <button onclick="logout()" style="background: #e74c3c; border:none; color:white; padding: 2px 8px; margin-left: 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Logout</button>
+        </div>
+        <button id="loginBtn" onclick="document.getElementById('loginModal').style.display='flex'" style="background: var(--primary); border: none; color: white; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">Login</button>
+    </div>
+
     <h1>Webibis Icon Pack 🚀</h1>
     <p>High-quality custom vector icons as a lightweight web font.</p>
     <div class="cdn-box">
@@ -93,10 +91,7 @@
     </div>
 </header>
 
-<div class="search-container">
-    <input type="text" id="searchBar" placeholder="Search icons..." oninput="filterIcons()">
-</div>
-
+<div class="search-container"><input type="text" id="searchBar" placeholder="Search icons..." oninput="filterIcons()"></div>
 <div class="icons-grid" id="iconsGrid"></div>
 
 <div class="modal" id="codeModal">
@@ -111,7 +106,7 @@
 <div class="modal" id="loginModal">
     <div class="modal-content">
         <h3 id="authTitle">Login to Continue</h3>
-        <input type="text" id="authUsername" placeholder="Username (Signup only)" style="width:90%; padding:10px; margin:5px 0; display:none;">
+        <input type="text" id="authUsername" placeholder="Username" style="width:90%; padding:10px; margin:5px 0; display:none;">
         <input type="email" id="authEmail" placeholder="Email" style="width:90%; padding:10px; margin:5px 0;">
         <input type="password" id="authPass" placeholder="Password" style="width:90%; padding:10px; margin:5px 0;">
         <button class="btn-action" id="authBtn" onclick="handleAuth()">Login</button>
@@ -125,6 +120,21 @@
     let allIcons = [];
     let isLoginMode = true;
     const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
+
+    function checkAuthStatus() {
+        const token = localStorage.getItem('user_token');
+        if (token) {
+            document.getElementById('userProfile').style.display = 'flex';
+            document.getElementById('loginBtn').style.display = 'none';
+            document.getElementById('userName').innerText = localStorage.getItem('user_name') || 'User';
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('user_token');
+        localStorage.removeItem('user_name');
+        location.reload();
+    }
 
     async function loadIcons() {
         try {
@@ -168,7 +178,9 @@
         if (json.success) {
             if (isLoginMode) {
                 localStorage.setItem('user_token', json.token);
+                localStorage.setItem('user_name', json.username || "User");
                 closeLoginModal();
+                checkAuthStatus();
                 alert("Login Successful!");
             } else {
                 alert("Registration successful! Please login.");
@@ -208,7 +220,7 @@
         displayIcons(allIcons.filter(i => i.icon_name.toLowerCase().includes(q)));
     }
 
-    window.onload = loadIcons;
+    window.onload = () => { loadIcons(); checkAuthStatus(); };
 </script>
 </body>
 </html>
