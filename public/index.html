@@ -33,6 +33,7 @@
                     const user = result.user;
                     localStorage.setItem('user_token', user.accessToken);
                     localStorage.setItem('user_name', user.displayName || "User");
+                    localStorage.setItem('user_email', user.email || "");
                     alert("Welcome, " + user.displayName + "! Login Successful.");
                     closeLoginModal();
                     checkAuthStatus();
@@ -47,8 +48,10 @@
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; }
         header { background: linear-gradient(135deg, var(--dark), #34495e); color: white; text-align: center; padding: 60px 20px; position: relative; }
         
-        .profile-box { position: absolute; top: 20px; right: 20px; display: flex; align-items: center; gap: 10px; }
-        .user-info { background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem; }
+        .profile-box { position: absolute; top: 20px; right: 20px; }
+        .user-dropdown { position: relative; display: inline-block; }
+        .drop-btn { cursor: pointer; background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.3); }
+        .dropdown-content { display: none; position: absolute; top: 45px; right: 0; background: white; color: #333; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 180px; z-index: 1000; text-align: left; }
         
         header h1 { margin: 0; font-size: 2.5rem; letter-spacing: 1px; }
         header p { margin: 10px 0 30px; font-size: 1.1rem; color: #b2bec3; }
@@ -76,9 +79,14 @@
 
 <header>
     <div class="profile-box">
-        <div id="userProfile" style="display: none;" class="user-info">
-            <span id="userName"></span>
-            <button onclick="logout()" style="background: #e74c3c; border:none; color:white; padding: 2px 8px; margin-left: 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Logout</button>
+        <div id="userProfile" class="user-dropdown" style="display: none;">
+            <div class="drop-btn" onclick="toggleDropdown()">
+                <span id="userName">User</span> ▼
+            </div>
+            <div id="profileDropdown" class="dropdown-content">
+                <p id="userEmail" style="font-size: 0.85rem; color: #555; margin: 0 0 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;"></p>
+                <button onclick="logout()" style="width:100%; background:#e74c3c; border:none; color:white; padding:8px; border-radius:4px; cursor:pointer;">Logout</button>
+            </div>
         </div>
         <button id="loginBtn" onclick="document.getElementById('loginModal').style.display='flex'" style="background: var(--primary); border: none; color: white; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">Login</button>
     </div>
@@ -121,18 +129,29 @@
     let isLoginMode = true;
     const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
 
+    function toggleDropdown() {
+        const drop = document.getElementById('profileDropdown');
+        drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
+    }
+
+    window.onclick = function(event) {
+        if (!event.target.matches('.drop-btn') && !event.target.matches('#userName')) {
+            document.getElementById('profileDropdown').style.display = 'none';
+        }
+    }
+
     function checkAuthStatus() {
         const token = localStorage.getItem('user_token');
         if (token) {
-            document.getElementById('userProfile').style.display = 'flex';
+            document.getElementById('userProfile').style.display = 'inline-block';
             document.getElementById('loginBtn').style.display = 'none';
             document.getElementById('userName').innerText = localStorage.getItem('user_name') || 'User';
+            document.getElementById('userEmail').innerText = localStorage.getItem('user_email') || '';
         }
     }
 
     function logout() {
-        localStorage.removeItem('user_token');
-        localStorage.removeItem('user_name');
+        localStorage.clear();
         location.reload();
     }
 
@@ -179,6 +198,7 @@
             if (isLoginMode) {
                 localStorage.setItem('user_token', json.token);
                 localStorage.setItem('user_name', json.username || "User");
+                localStorage.setItem('user_email', email);
                 closeLoginModal();
                 checkAuthStatus();
                 alert("Login Successful!");
