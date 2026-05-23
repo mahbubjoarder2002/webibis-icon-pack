@@ -184,94 +184,36 @@
     </div>
 </div>
 
-<script>
-    let allIcons = [];
-    let isLoginMode = true;
-    const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, onSnapshot, updateDoc, arrayUnion, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    function toggleDropdown() { const drop = document.getElementById('profileDropdown'); drop.style.display = drop.style.display === 'block' ? 'none' : 'block'; }
-    window.onclick = function(event) { if (!event.target.matches('.drop-btn') && !event.target.matches('#userName')) { document.getElementById('profileDropdown').style.display = 'none'; } }
-    function logout() { localStorage.clear(); location.reload(); }
-
-    async function loadIcons() {
-        try { const response = await fetch(`${SERVER_URL}/api/icons/all`); const result = await response.json(); if (result.success) { allIcons = result.data; displayIcons(allIcons); } } catch (error) { console.error('Error:', error); }
-    }
-
-    function displayIcons(icons) {
-        const grid = document.getElementById('iconsGrid');
-        grid.innerHTML = icons.map(icon => `
-            <div class="icon-card" onclick="openModal('${icon.icon_name}', 'webibis-icons-${icon.icon_name.toLowerCase().replace(/\s+/g, '-')}')">
-                <div class="icon-img-box"><img src="${SERVER_URL}/api/icons/svg/${icon.id}" alt="${icon.icon_name}"></div>
-                <div class="icon-name">${icon.icon_name}</div>
-            </div>
-        `).join('');
-    }
-
-    function toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        document.querySelector('#loginModal h3').innerText = isLoginMode ? 'Login to Continue' : 'Create Account';
-        document.getElementById('authBtn').innerText = isLoginMode ? 'Login' : 'Signup';
-        document.getElementById('authUsername').style.display = isLoginMode ? 'none' : 'block';
-        document.getElementById('toggleText').innerText = isLoginMode ? "Don't have an account? Signup" : "Already have an account? Login";
-    }
-
-    async function handleAuth() {
-        const email = document.getElementById('authEmail').value;
-        const password = document.getElementById('authPass').value;
-        const username = document.getElementById('authUsername').value;
-        const endpoint = isLoginMode ? '/api/login' : '/api/register';
-        const res = await fetch(`${SERVER_URL}${endpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, username: isLoginMode ? undefined : username })
-        });
-        const json = await res.json();
-        if (json.success) {
-            if (isLoginMode) {
-                localStorage.setItem('user_token', json.token);
-                localStorage.setItem('user_name', json.username || "User");
-                localStorage.setItem('user_email', email);
-                closeLoginModal();
-                checkAuthStatus();
-                alert("Login Successful!");
-            } else { alert("Registration successful! Please login."); toggleAuthMode(); }
-        } else { alert(json.message || "Action failed!"); }
-    }
-
-    function openModal(name, className) {
-        document.getElementById('modalIconName').innerText = name.toUpperCase();
-        document.getElementById('codeToCopy').innerText = `<i class="${className}"></i>`;
-        document.getElementById('codeModal').style.display = 'flex';
-    }
-
-    function closeModal() { document.getElementById('codeModal').style.display = 'none'; }
-    function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
-
-    function copyModalTag(btn) {
-        if (!localStorage.getItem('user_token')) { closeModal(); document.getElementById('loginModal').style.display = 'flex'; return; }
-        navigator.clipboard.writeText(document.getElementById('codeToCopy').innerText);
-        btn.innerText = "Copied!";
-        setTimeout(() => { btn.innerText = "Copy HTML Tag"; closeModal(); }, 1500);
-    }
-
-    function copyText(id, btn) {
-        navigator.clipboard.writeText(document.getElementById(id).innerText);
-        btn.innerText = "Copied!";
-        setTimeout(() => btn.innerText = "Copy CDN", 2000);
-    }
-
-    function filterIcons() {
-        const q = document.getElementById('searchBar').value.toLowerCase();
-        displayIcons(allIcons.filter(i => i.icon_name.toLowerCase().includes(q)));
-    }
-
-    window.onload = () => { 
-        document.getElementById('loadingOverlay').style.display = 'none';
-        loadIcons(); 
-        checkAuthStatus(); 
+    const firebaseConfig = {
+        apiKey: "AIzaSyDPOBUWomscG6ZV-lvPx-cOctheBxIKAAE",
+        authDomain: "webibis-auth.firebaseapp.com",
+        projectId: "webibis-auth",
+        storageBucket: "webibis-auth.firebasestorage.app",
+        messagingSenderId: "31094009805",
+        appId: "1:31094009805:web:c53f5651b82c46871f5e84",
+        measurementId: "G-QD1XFS57T3"
     };
 
-    // চ্যাট সেন্ড করার ফাংশনটি আপনার স্ক্রিপ্টের শুরুতে যুক্ত করুন
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    const db = getFirestore(app);
+    const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
+    
+    let allIcons = [];
+    let isLoginMode = true;
+
+    // চ্যাট সিস্টেম ফাংশন
+    window.toggleChat = function() {
+        const box = document.getElementById('chatBox');
+        box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+    }
+
     window.sendChatMessage = async function() {
         const input = document.getElementById('chatInput');
         const email = localStorage.getItem('user_email');
@@ -279,20 +221,79 @@
             alert("Please login first to chat!");
             return;
         }
-
         try {
-            // Firestore-এ মেসেজ আপডেট করা
             await updateDoc(doc(db, "chats", email), {
                 messages: arrayUnion({ sender: 'User', text: input.value, time: new Date().toISOString() })
             });
         } catch (e) {
-            // যদি ডকুমেন্ট না থাকে তবে তৈরি করা
             await setDoc(doc(db, "chats", email), { 
                 messages: [{ sender: 'User', text: input.value, time: new Date().toISOString() }] 
             });
         }
         input.value = '';
     }
+
+    // অথেন্টিকেশন ও অন্যান্য ফাংশন
+    window.checkAuthStatus = function() {
+        const token = localStorage.getItem('user_token');
+        if (token) {
+            document.getElementById('userProfile').style.display = 'inline-block';
+            document.getElementById('loginBtn').style.display = 'none';
+            document.getElementById('chatBtn').style.display = 'block';
+            document.getElementById('userName').innerText = localStorage.getItem('user_name') || 'User';
+            
+            const email = localStorage.getItem('user_email');
+            onSnapshot(doc(db, "chats", email), (doc) => {
+                if (doc.exists()) {
+                    const msgs = doc.data().messages;
+                    const container = document.getElementById('chatMessages');
+                    container.innerHTML = msgs.map(m => 
+                        `<div class="msg ${m.sender.toLowerCase()}"><b>${m.sender}:</b> ${m.text}</div>`
+                    ).join('');
+                    container.scrollTop = container.scrollHeight;
+                }
+            });
+        }
+    }
+
+    window.googleLogin = function() {
+        signInWithPopup(auth, provider).then((result) => {
+            localStorage.setItem('user_token', result.user.accessToken);
+            localStorage.setItem('user_name', result.user.displayName);
+            localStorage.setItem('user_email', result.user.email);
+            checkAuthStatus();
+            closeLoginModal();
+        }).catch(err => alert(err.message));
+    };
+
+    window.logout = () => { localStorage.clear(); location.reload(); }
+    window.toggleDropdown = () => { const d = document.getElementById('profileDropdown'); d.style.display = d.style.display === 'block' ? 'none' : 'block'; }
+    window.closeModal = () => document.getElementById('codeModal').style.display = 'none';
+    window.closeLoginModal = () => document.getElementById('loginModal').style.display = 'none';
+
+    async function loadIcons() {
+        try { const res = await fetch(`${SERVER_URL}/api/icons/all`); const data = await res.json(); if(data.success) { allIcons = data.data; displayIcons(allIcons); } } catch(e) {}
+    }
+
+    function displayIcons(icons) {
+        document.getElementById('iconsGrid').innerHTML = icons.map(icon => `
+            <div class="icon-card" onclick="openModal('${icon.icon_name}', 'webibis-icons-${icon.icon_name.toLowerCase().replace(/\s+/g, '-')}')">
+                <div class="icon-img-box"><img src="${SERVER_URL}/api/icons/svg/${icon.id}"></div>
+                <div>${icon.icon_name}</div>
+            </div>`).join('');
+    }
+
+    window.openModal = (name, className) => {
+        document.getElementById('modalIconName').innerText = name.toUpperCase();
+        document.getElementById('codeToCopy').innerText = `<i class="${className}"></i>`;
+        document.getElementById('codeModal').style.display = 'flex';
+    }
+
+    window.onload = () => { 
+        document.getElementById('loadingOverlay').style.display = 'none'; 
+        loadIcons(); 
+        checkAuthStatus(); 
+    };
 </script>
 </body>
 </html>
