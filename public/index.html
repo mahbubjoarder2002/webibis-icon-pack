@@ -9,6 +9,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
         import { getFirestore, doc, onSnapshot, updateDoc, arrayUnion, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -24,6 +25,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+        const analytics = getAnalytics(app);
         const db = getFirestore(app);
         const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
 
@@ -37,6 +39,7 @@
             const input = document.getElementById('chatInput');
             const email = localStorage.getItem('user_email');
             if (!input.value || !email) return;
+
             try {
                 await updateDoc(doc(db, "chats", email), {
                     messages: arrayUnion({ sender: 'User', text: input.value, time: new Date().toISOString() })
@@ -53,10 +56,6 @@
                 document.getElementById('userProfile').style.display = 'inline-block';
                 document.getElementById('loginBtn').style.display = 'none';
                 document.getElementById('chatBtn').style.display = 'block';
-                
-                // নাম এবং ইমেইল আপডেট করা হচ্ছে
-                document.getElementById('userName').innerText = localStorage.getItem('user_name') || 'User';
-                document.getElementById('userEmail').innerText = localStorage.getItem('user_email') || '';
                 
                 const email = localStorage.getItem('user_email');
                 onSnapshot(doc(db, "chats", email), (doc) => {
@@ -80,7 +79,6 @@
                 localStorage.setItem('user_email', user.email || "");
                 closeLoginModal();
                 checkAuthStatus();
-                alert("Welcome, " + user.displayName + "! Login Successful.");
             }).catch((error) => { alert("Google Login Failed: " + error.message); });
         };
     </script>
@@ -88,32 +86,41 @@
     <style>
         :root { --primary: #1abc9c; --dark: #2c3e50; --bg: #f8f9fa; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; }
+        
+        /* Chat Styles */
         #chatBtn { position: fixed; bottom: 20px; left: 20px; background: var(--primary); color: white; padding: 12px 20px; border-radius: 25px; cursor: pointer; z-index: 9998; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         #chatBox { display: none; position: fixed; bottom: 70px; left: 20px; width: 280px; height: 350px; background: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 9999; flex-direction: column; overflow: hidden; }
         #chatMessages { flex: 1; padding: 10px; overflow-y: auto; font-size: 0.9rem; }
         .msg { margin-bottom: 8px; padding: 6px; border-radius: 5px; }
         .msg.user { background: #d1f7e0; }
         .msg.admin { background: #e0e0e0; }
+
         #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #1abc9c; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
         header { background: linear-gradient(135deg, var(--dark), #34495e); color: white; text-align: center; padding: 60px 20px; position: relative; }
         .profile-box { position: absolute; top: 20px; right: 20px; }
         .user-dropdown { position: relative; display: inline-block; }
         .drop-btn { cursor: pointer; background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.3); }
         .dropdown-content { display: none; position: absolute; top: 45px; right: 0; background: white; color: #333; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 180px; z-index: 1000; text-align: left; }
+        
         header h1 { margin: 0; font-size: 2.5rem; }
         header p { margin: 10px 0 30px; font-size: 1.1rem; color: #b2bec3; }
+
         .cdn-box { max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.2); }
         .cdn-box code { color: #ffeaa7; font-family: monospace; font-size: 0.95rem; overflow-x: auto; white-space: nowrap; margin-right: 10px; }
         .cdn-box button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
         .search-container { max-width: 1000px; margin: 40px auto 20px; padding: 0 20px; }
         #searchBar { width: 100%; padding: 15px 20px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 30px; outline: none; box-sizing: border-box; }
+
         .icons-grid { max-width: 1000px; margin: 0 auto 50px; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
         .icon-card { background: white; border: 1px solid #e1e8ed; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; }
         .icon-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
         .icon-img-box { width: 50px; height: 50px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; }
         .icon-img-box img { width: 100%; height: 100%; object-fit: contain; }
+
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
         .modal-content { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; }
         .copy-code-box { background: #f1f2f6; padding: 12px; border-radius: 6px; font-family: monospace; margin: 15px 0; border: 1px solid #dfe4ea; text-align: left; overflow-x: auto; }
@@ -184,113 +191,93 @@
     </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot, updateDoc, arrayUnion, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyDPOBUWomscG6ZV-lvPx-cOctheBxIKAAE",
-        authDomain: "webibis-auth.firebaseapp.com",
-        projectId: "webibis-auth",
-        storageBucket: "webibis-auth.firebasestorage.app",
-        messagingSenderId: "31094009805",
-        appId: "1:31094009805:web:c53f5651b82c46871f5e84",
-        measurementId: "G-QD1XFS57T3"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-    const db = getFirestore(app);
-    const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
+<script>
+    // ... আপনার আগের JS ফাংশনগুলো (toggleDropdown, checkAuthStatus, logout, loadIcons, ইত্যাদি এখানে থাকবে)
+    // নিশ্চিত করবেন যেন window.onload এর ভেতরে loadIcons() এবং checkAuthStatus() কল করা থাকে।
     
+    // আমি এখানে সবগুলো ফাংশন একসাথে গুছিয়ে দিচ্ছি:
     let allIcons = [];
     let isLoginMode = true;
+    const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
 
-    // চ্যাট সিস্টেম ফাংশন
-    window.toggleChat = function() {
-        const box = document.getElementById('chatBox');
-        box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
-    }
-
-    window.sendChatMessage = async function() {
-        const input = document.getElementById('chatInput');
-        const email = localStorage.getItem('user_email');
-        if (!input.value || !email) {
-            alert("Please login first to chat!");
-            return;
-        }
-        try {
-            await updateDoc(doc(db, "chats", email), {
-                messages: arrayUnion({ sender: 'User', text: input.value, time: new Date().toISOString() })
-            });
-        } catch (e) {
-            await setDoc(doc(db, "chats", email), { 
-                messages: [{ sender: 'User', text: input.value, time: new Date().toISOString() }] 
-            });
-        }
-        input.value = '';
-    }
-
-    // অথেন্টিকেশন ও অন্যান্য ফাংশন
-    window.checkAuthStatus = function() {
-        const token = localStorage.getItem('user_token');
-        if (token) {
-            document.getElementById('userProfile').style.display = 'inline-block';
-            document.getElementById('loginBtn').style.display = 'none';
-            document.getElementById('chatBtn').style.display = 'block';
-            document.getElementById('userName').innerText = localStorage.getItem('user_name') || 'User';
-            
-            const email = localStorage.getItem('user_email');
-            onSnapshot(doc(db, "chats", email), (doc) => {
-                if (doc.exists()) {
-                    const msgs = doc.data().messages;
-                    const container = document.getElementById('chatMessages');
-                    container.innerHTML = msgs.map(m => 
-                        `<div class="msg ${m.sender.toLowerCase()}"><b>${m.sender}:</b> ${m.text}</div>`
-                    ).join('');
-                    container.scrollTop = container.scrollHeight;
-                }
-            });
-        }
-    }
-
-    window.googleLogin = function() {
-        signInWithPopup(auth, provider).then((result) => {
-            localStorage.setItem('user_token', result.user.accessToken);
-            localStorage.setItem('user_name', result.user.displayName);
-            localStorage.setItem('user_email', result.user.email);
-            checkAuthStatus();
-            closeLoginModal();
-        }).catch(err => alert(err.message));
-    };
-
-    window.logout = () => { localStorage.clear(); location.reload(); }
-    window.toggleDropdown = () => { const d = document.getElementById('profileDropdown'); d.style.display = d.style.display === 'block' ? 'none' : 'block'; }
-    window.closeModal = () => document.getElementById('codeModal').style.display = 'none';
-    window.closeLoginModal = () => document.getElementById('loginModal').style.display = 'none';
+    function toggleDropdown() { const drop = document.getElementById('profileDropdown'); drop.style.display = drop.style.display === 'block' ? 'none' : 'block'; }
+    window.onclick = function(event) { if (!event.target.matches('.drop-btn') && !event.target.matches('#userName')) { document.getElementById('profileDropdown').style.display = 'none'; } }
+    function logout() { localStorage.clear(); location.reload(); }
 
     async function loadIcons() {
-        try { const res = await fetch(`${SERVER_URL}/api/icons/all`); const data = await res.json(); if(data.success) { allIcons = data.data; displayIcons(allIcons); } } catch(e) {}
+        try { const response = await fetch(`${SERVER_URL}/api/icons/all`); const result = await response.json(); if (result.success) { allIcons = result.data; displayIcons(allIcons); } } catch (error) { console.error('Error:', error); }
     }
 
     function displayIcons(icons) {
-        document.getElementById('iconsGrid').innerHTML = icons.map(icon => `
+        const grid = document.getElementById('iconsGrid');
+        grid.innerHTML = icons.map(icon => `
             <div class="icon-card" onclick="openModal('${icon.icon_name}', 'webibis-icons-${icon.icon_name.toLowerCase().replace(/\s+/g, '-')}')">
-                <div class="icon-img-box"><img src="${SERVER_URL}/api/icons/svg/${icon.id}"></div>
-                <div>${icon.icon_name}</div>
-            </div>`).join('');
+                <div class="icon-img-box"><img src="${SERVER_URL}/api/icons/svg/${icon.id}" alt="${icon.icon_name}"></div>
+                <div class="icon-name">${icon.icon_name}</div>
+            </div>
+        `).join('');
     }
 
-    window.openModal = (name, className) => {
+    function toggleAuthMode() {
+        isLoginMode = !isLoginMode;
+        document.querySelector('#loginModal h3').innerText = isLoginMode ? 'Login to Continue' : 'Create Account';
+        document.getElementById('authBtn').innerText = isLoginMode ? 'Login' : 'Signup';
+        document.getElementById('authUsername').style.display = isLoginMode ? 'none' : 'block';
+        document.getElementById('toggleText').innerText = isLoginMode ? "Don't have an account? Signup" : "Already have an account? Login";
+    }
+
+    async function handleAuth() {
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPass').value;
+        const username = document.getElementById('authUsername').value;
+        const endpoint = isLoginMode ? '/api/login' : '/api/register';
+        const res = await fetch(`${SERVER_URL}${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, username: isLoginMode ? undefined : username })
+        });
+        const json = await res.json();
+        if (json.success) {
+            if (isLoginMode) {
+                localStorage.setItem('user_token', json.token);
+                localStorage.setItem('user_name', json.username || "User");
+                localStorage.setItem('user_email', email);
+                closeLoginModal();
+                checkAuthStatus();
+                alert("Login Successful!");
+            } else { alert("Registration successful! Please login."); toggleAuthMode(); }
+        } else { alert(json.message || "Action failed!"); }
+    }
+
+    function openModal(name, className) {
         document.getElementById('modalIconName').innerText = name.toUpperCase();
         document.getElementById('codeToCopy').innerText = `<i class="${className}"></i>`;
         document.getElementById('codeModal').style.display = 'flex';
     }
 
+    function closeModal() { document.getElementById('codeModal').style.display = 'none'; }
+    function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
+
+    function copyModalTag(btn) {
+        if (!localStorage.getItem('user_token')) { closeModal(); document.getElementById('loginModal').style.display = 'flex'; return; }
+        navigator.clipboard.writeText(document.getElementById('codeToCopy').innerText);
+        btn.innerText = "Copied!";
+        setTimeout(() => { btn.innerText = "Copy HTML Tag"; closeModal(); }, 1500);
+    }
+
+    function copyText(id, btn) {
+        navigator.clipboard.writeText(document.getElementById(id).innerText);
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = "Copy CDN", 2000);
+    }
+
+    function filterIcons() {
+        const q = document.getElementById('searchBar').value.toLowerCase();
+        displayIcons(allIcons.filter(i => i.icon_name.toLowerCase().includes(q)));
+    }
+
     window.onload = () => { 
-        document.getElementById('loadingOverlay').style.display = 'none'; 
+        document.getElementById('loadingOverlay').style.display = 'none';
         loadIcons(); 
         checkAuthStatus(); 
     };
