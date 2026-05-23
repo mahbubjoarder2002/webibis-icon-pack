@@ -10,7 +10,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
-        import { getFirestore, doc, onSnapshot, updateDoc, arrayUnion, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDPOBUWomscG6ZV-lvPx-cOctheBxIKAAE",
@@ -26,86 +25,35 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         const analytics = getAnalytics(app);
-        const db = getFirestore(app);
         const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
 
-        // Chat Functions
-        window.toggleChat = function() {
-            const box = document.getElementById('chatBox');
-            box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        window.sendChatMessage = async function() {
-            const input = document.getElementById('chatInput');
-            const email = localStorage.getItem('user_email');
-            if (!input.value || !email) return;
-
-            try {
-                await updateDoc(doc(db, "chats", email), {
-                    messages: arrayUnion({ sender: 'User', text: input.value, time: new Date().toISOString() })
-                });
-            } catch (e) {
-                await setDoc(doc(db, "chats", email), { messages: [{ sender: 'User', text: input.value, time: new Date().toISOString() }] });
-            }
-            input.value = '';
-        }
-
-        window.checkAuthStatus = function() {
-            const token = localStorage.getItem('user_token');
-            if (token) {
-                document.getElementById('userProfile').style.display = 'inline-block';
-                document.getElementById('loginBtn').style.display = 'none';
-                document.getElementById('chatBtn').style.display = 'block';
-                
-                const email = localStorage.getItem('user_email');
-                onSnapshot(doc(db, "chats", email), (doc) => {
-                    if (doc.exists()) {
-                        const msgs = doc.data().messages;
-                        const container = document.getElementById('chatMessages');
-                        container.innerHTML = msgs.map(m => 
-                            `<div class="msg ${m.sender.toLowerCase()}"><b>${m.sender}:</b> ${m.text}</div>`
-                        ).join('');
-                        container.scrollTop = container.scrollHeight;
-                    }
-                });
-            }
-        }
-
         window.googleLogin = function() {
-            signInWithPopup(auth, provider).then(async (result) => {
-                const user = result.user;
-                localStorage.setItem('user_token', user.accessToken);
-                localStorage.setItem('user_name', user.displayName || "User");
-                localStorage.setItem('user_email', user.email || "");
-                closeLoginModal();
-                checkAuthStatus();
-            }).catch((error) => { alert("Google Login Failed: " + error.message); });
+            signInWithPopup(auth, provider)
+                .then(async (result) => {
+                    const user = result.user;
+                    localStorage.setItem('user_token', user.accessToken);
+                    localStorage.setItem('user_name', user.displayName || "User");
+                    localStorage.setItem('user_email', user.email || "");
+                    alert("Welcome, " + user.displayName + "! Login Successful.");
+                    closeLoginModal();
+                    checkAuthStatus();
+                }).catch((error) => {
+                    alert("Google Login Failed: " + error.message);
+                });
         };
     </script>
 
     <style>
         :root { --primary: #1abc9c; --dark: #2c3e50; --bg: #f8f9fa; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; }
-        
-        /* Chat Styles */
-        #chatBtn { position: fixed; bottom: 20px; left: 20px; background: var(--primary); color: white; padding: 12px 20px; border-radius: 25px; cursor: pointer; z-index: 9998; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        #chatBox { display: none; position: fixed; bottom: 70px; left: 20px; width: 280px; height: 350px; background: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 9999; flex-direction: column; overflow: hidden; }
-        #chatMessages { flex: 1; padding: 10px; overflow-y: auto; font-size: 0.9rem; }
-        .msg { margin-bottom: 8px; padding: 6px; border-radius: 5px; }
-        .msg.user { background: #d1f7e0; }
-        .msg.admin { background: #e0e0e0; }
-
-        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #1abc9c; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
         header { background: linear-gradient(135deg, var(--dark), #34495e); color: white; text-align: center; padding: 60px 20px; position: relative; }
+        
         .profile-box { position: absolute; top: 20px; right: 20px; }
         .user-dropdown { position: relative; display: inline-block; }
         .drop-btn { cursor: pointer; background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.3); }
         .dropdown-content { display: none; position: absolute; top: 45px; right: 0; background: white; color: #333; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 180px; z-index: 1000; text-align: left; }
         
-        header h1 { margin: 0; font-size: 2.5rem; }
+        header h1 { margin: 0; font-size: 2.5rem; letter-spacing: 1px; }
         header p { margin: 10px 0 30px; font-size: 1.1rem; color: #b2bec3; }
 
         .cdn-box { max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.2); }
@@ -128,11 +76,6 @@
     </style>
 </head>
 <body>
-
-<div id="loadingOverlay">
-    <div class="spinner"></div>
-    <p style="margin-top: 20px; font-family: sans-serif; color: #2c3e50; font-weight: bold;">Please wait, server is waking up...</p>
-</div>
 
 <header>
     <div class="profile-box">
@@ -159,16 +102,6 @@
 <div class="search-container"><input type="text" id="searchBar" placeholder="Search icons..." oninput="filterIcons()"></div>
 <div class="icons-grid" id="iconsGrid"></div>
 
-<div id="chatBtn" style="display:none;" onclick="toggleChat()">Support Chat</div>
-<div id="chatBox">
-    <div style="background:#34495e; color:white; padding:10px; text-align:center;">Support Chat</div>
-    <div id="chatMessages"></div>
-    <div style="padding:10px; display:flex;">
-        <input type="text" id="chatInput" style="flex:1" placeholder="Write a message...">
-        <button onclick="sendChatMessage()">Send</button>
-    </div>
-</div>
-
 <div class="modal" id="codeModal">
     <div class="modal-content">
         <h3 id="modalIconName"></h3>
@@ -192,20 +125,42 @@
 </div>
 
 <script>
-    // ... আপনার আগের JS ফাংশনগুলো (toggleDropdown, checkAuthStatus, logout, loadIcons, ইত্যাদি এখানে থাকবে)
-    // নিশ্চিত করবেন যেন window.onload এর ভেতরে loadIcons() এবং checkAuthStatus() কল করা থাকে।
-    
-    // আমি এখানে সবগুলো ফাংশন একসাথে গুছিয়ে দিচ্ছি:
     let allIcons = [];
     let isLoginMode = true;
     const SERVER_URL = 'https://webibis-icon-pack.onrender.com';
 
-    function toggleDropdown() { const drop = document.getElementById('profileDropdown'); drop.style.display = drop.style.display === 'block' ? 'none' : 'block'; }
-    window.onclick = function(event) { if (!event.target.matches('.drop-btn') && !event.target.matches('#userName')) { document.getElementById('profileDropdown').style.display = 'none'; } }
-    function logout() { localStorage.clear(); location.reload(); }
+    function toggleDropdown() {
+        const drop = document.getElementById('profileDropdown');
+        drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
+    }
+
+    window.onclick = function(event) {
+        if (!event.target.matches('.drop-btn') && !event.target.matches('#userName')) {
+            document.getElementById('profileDropdown').style.display = 'none';
+        }
+    }
+
+    function checkAuthStatus() {
+        const token = localStorage.getItem('user_token');
+        if (token) {
+            document.getElementById('userProfile').style.display = 'inline-block';
+            document.getElementById('loginBtn').style.display = 'none';
+            document.getElementById('userName').innerText = localStorage.getItem('user_name') || 'User';
+            document.getElementById('userEmail').innerText = localStorage.getItem('user_email') || '';
+        }
+    }
+
+    function logout() {
+        localStorage.clear();
+        location.reload();
+    }
 
     async function loadIcons() {
-        try { const response = await fetch(`${SERVER_URL}/api/icons/all`); const result = await response.json(); if (result.success) { allIcons = result.data; displayIcons(allIcons); } } catch (error) { console.error('Error:', error); }
+        try {
+            const response = await fetch(`${SERVER_URL}/api/icons/all`);
+            const result = await response.json();
+            if (result.success) { allIcons = result.data; displayIcons(allIcons); }
+        } catch (error) { console.error('Error:', error); }
     }
 
     function displayIcons(icons) {
@@ -231,11 +186,13 @@
         const password = document.getElementById('authPass').value;
         const username = document.getElementById('authUsername').value;
         const endpoint = isLoginMode ? '/api/login' : '/api/register';
+
         const res = await fetch(`${SERVER_URL}${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password, username: isLoginMode ? undefined : username })
         });
+        
         const json = await res.json();
         if (json.success) {
             if (isLoginMode) {
@@ -245,7 +202,10 @@
                 closeLoginModal();
                 checkAuthStatus();
                 alert("Login Successful!");
-            } else { alert("Registration successful! Please login."); toggleAuthMode(); }
+            } else {
+                alert("Registration successful! Please login.");
+                toggleAuthMode();
+            }
         } else { alert(json.message || "Action failed!"); }
     }
 
@@ -259,7 +219,11 @@
     function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
 
     function copyModalTag(btn) {
-        if (!localStorage.getItem('user_token')) { closeModal(); document.getElementById('loginModal').style.display = 'flex'; return; }
+        if (!localStorage.getItem('user_token')) {
+            closeModal();
+            document.getElementById('loginModal').style.display = 'flex';
+            return;
+        }
         navigator.clipboard.writeText(document.getElementById('codeToCopy').innerText);
         btn.innerText = "Copied!";
         setTimeout(() => { btn.innerText = "Copy HTML Tag"; closeModal(); }, 1500);
@@ -276,11 +240,7 @@
         displayIcons(allIcons.filter(i => i.icon_name.toLowerCase().includes(q)));
     }
 
-    window.onload = () => { 
-        document.getElementById('loadingOverlay').style.display = 'none';
-        loadIcons(); 
-        checkAuthStatus(); 
-    };
+    window.onload = () => { loadIcons(); checkAuthStatus(); };
 </script>
 </body>
 </html>
