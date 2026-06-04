@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
@@ -12,18 +11,21 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'webibis_secret_2026_key';
 
-// --- DATABASE AUTO-SETUP & CHECK ---
+// --- CORS & MIDDLEWARE ---
+// সব ডোমেইন থেকে রিকোয়েস্ট এক্সেপ্ট করার জন্য CORS সেট করা হলো
+app.use(cors({ origin: "*" })); 
+app.use(express.json());
+
+// --- DATABASE AUTO-SETUP ---
 const setupDatabase = async () => {
     try {
-        await db.query(`
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(255),
-                email VARCHAR(255),
-                password VARCHAR(255),
-                is_active TINYINT DEFAULT 0
-            )
-        `);
+        await db.query(`CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(255),
+            email VARCHAR(255),
+            password VARCHAR(255),
+            is_active TINYINT DEFAULT 0
+        )`);
         console.log("Database table 'users' is ready.");
     } catch (error) {
         console.error("Database setup error:", error.message);
@@ -31,11 +33,21 @@ const setupDatabase = async () => {
 };
 setupDatabase();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// --- STATIC FILES CONFIGURATION (FOR CDN) ---
+// ফাইলগুলো সঠিকভাবে লোড করার জন্য সঠিক MIME টাইপ সেট করা
+app.use('/dist', express.static(path.join(__dirname, 'dist'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.css')) res.setHeader('Content-Type', 'text/css');
+        if (path.endsWith('.woff2')) res.setHeader('Content-Type', 'font/woff2');
+        if (path.endsWith('.woff')) res.setHeader('Content-Type', 'font/woff');
+        if (path.endsWith('.ttf')) res.setHeader('Content-Type', 'font/ttf');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+}));
 
-// --- AUTH ROUTES ---
+app.use(express.static(path.join(__dirname, 'public')));
+
+// --- AUTH & OTHER ROUTES ---
 app.post('/api/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -57,7 +69,6 @@ app.post('/api/login', async (req, res) => {
         if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid password' });
         
         await db.query('UPDATE users SET is_active = 1 WHERE id = ?', [users[0].id]);
-        
         const token = jwt.sign({ id: users[0].id }, JWT_SECRET, { expiresIn: '24h' });
         res.status(200).json({ success: true, token });
     } catch (error) {
@@ -65,27 +76,15 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// --- ADMIN ROUTES ---
 app.get('/api/users/stats', async (req, res) => {
     try {
         const [users] = await db.query('SELECT username as name, email, is_active FROM users');
-        res.json({
-            success: true,
-            totalCount: users.length,
-            activeCount: users.filter(u => u.is_active === 1).length,
-            users: users
-        });
+        res.json({ success: true, totalCount: users.length, activeCount: users.filter(u => u.is_active === 1).length, users: users });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error fetching stats' });
     }
 });
 
-// --- UPDATED STATIC PATHS ---
-// এখন সার্ভার সরাসরি রুট ডিরেক্টরির /dist ফোল্ডার থেকে ফাইল লোড করবে
-app.use('/dist', express.static(path.join(__dirname, 'dist')));
-app.use(express.static(path.join(__dirname, 'public')));
-
-// --- ICON ROUTES ---
 app.post('/api/icons/add', async (req, res) => {
     try {
         const { icon_name, category, svg_code } = req.body;
