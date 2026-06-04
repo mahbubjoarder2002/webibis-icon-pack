@@ -15,7 +15,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'webibis_secret_2026_key';
 // --- DATABASE AUTO-SETUP & CHECK ---
 const setupDatabase = async () => {
     try {
-        // users টেবিল না থাকলে তৈরি করা
         await db.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -26,11 +25,6 @@ const setupDatabase = async () => {
             )
         `);
         console.log("Database table 'users' is ready.");
-
-        // ডাটাবেসে কতজন ইউজার আছে তা চেক করা (ডিবাগিংয়ের জন্য)
-        const [rows] = await db.query('SELECT COUNT(*) as count FROM users');
-        console.log("Total users found in database:", rows[0].count);
-
     } catch (error) {
         console.error("Database setup error:", error.message);
     }
@@ -41,20 +35,7 @@ setupDatabase();
 app.use(cors());
 app.use(express.json());
 
-// Auth Middleware
-const verifyToken = (req, res, next) => {
-    const token = req.headers['authorization'];
-    if (!token) return res.status(403).json({ success: false, message: 'No token provided!' });
-    
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
-        if (err) return res.status(401).json({ success: false, message: 'Failed to authenticate token.' });
-        req.userId = decoded.id;
-        next();
-    });
-};
-
 // --- AUTH ROUTES ---
-
 app.post('/api/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -99,11 +80,12 @@ app.get('/api/users/stats', async (req, res) => {
     }
 });
 
-// --- EXISTING ROUTES ---
-
-app.use('/dist', express.static(path.join(__dirname, 'public', 'dist')));
+// --- UPDATED STATIC PATHS ---
+// এখন সার্ভার সরাসরি রুট ডিরেক্টরির /dist ফোল্ডার থেকে ফাইল লোড করবে
+app.use('/dist', express.static(path.join(__dirname, 'dist')));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// --- ICON ROUTES ---
 app.post('/api/icons/add', async (req, res) => {
     try {
         const { icon_name, category, svg_code } = req.body;
